@@ -1,0 +1,1984 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Echo Peel</title>
+<meta name="description" content="Echo Peel takes the sound out of screen recordings and other videos and saves it as an MP3, right on your iPhone or computer. Works offline. Nothing is uploaded.">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#F2F2F7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Echo Peel">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="format-detection" content="telephone=no">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<style>
+/* =====================================================================
+   Colours. Every colour has a light and a dark version; the page
+   follows the iPhone's or computer's appearance setting by itself.
+   ===================================================================== */
+:root{
+  --bg:#F2F2F7; --panel:#FFFFFF; --text:#1C1C1E; --text2:#5E5E66; --text3:#8E8E93;
+  --sep:rgba(60,60,67,.14); --fill:rgba(118,118,128,.12); --fill-strong:rgba(118,118,128,.24);
+  --accent:#0E7490; --accent-bg:#0E7490; --tint:rgba(14,116,144,.12);
+  --danger:#D92D20; --good:#1E8E3E; --warn:#B45309; --warn-tint:rgba(245,158,11,.14);
+  --sheet-bg:#F2F2F7; --sheet-card:#FFFFFF;
+  --toast-bg:rgba(28,28,30,.94); --toast-fg:#FFFFFF;
+  --wave-bg:#E9EEF2; --wave:#0E7490; --wave-grid:rgba(60,60,67,.12);
+  --trim:#0E7490; --trim-shade:rgba(242,242,247,.74); --head:#1C1C1E;
+  --stage:#0B0B0D;
+  --bar-bg:rgba(242,242,247,.86);
+  --shadow:0 18px 48px rgba(20,40,60,.24),0 0 0 1px rgba(60,60,67,.10);
+  color-scheme:light dark;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#000000; --panel:#1C1C1E; --text:#F2F2F7; --text2:#AEAEB2; --text3:#7C7C82;
+    --sep:rgba(84,84,88,.55); --fill:rgba(118,118,128,.24); --fill-strong:rgba(118,118,128,.38);
+    --accent:#5CCFE6; --accent-bg:#0E7490; --tint:rgba(92,207,230,.16);
+    --danger:#FF6B61; --good:#32D74B; --warn:#FFB340; --warn-tint:rgba(255,179,64,.14);
+    --sheet-bg:#1C1C1E; --sheet-card:#2C2C2E;
+    --toast-bg:rgba(242,242,247,.96); --toast-fg:#1C1C1E;
+    --wave-bg:#121416; --wave:#3FC1DB; --wave-grid:rgba(255,255,255,.08);
+    --trim:#1595B3; --trim-shade:rgba(0,0,0,.62); --head:#FFFFFF;
+    --stage:#000000;
+    --bar-bg:rgba(22,22,24,.86);
+    --shadow:0 22px 56px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.08);
+  }
+}
+
+/* ---------- basics ---------- */
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%;background:var(--bg)}
+body{margin:0;min-height:100vh;min-height:100dvh;background:var(--bg);color:var(--text);
+  font:15px/1.4 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  -webkit-font-smoothing:antialiased}
+body.locked{overflow:hidden}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;margin:0;cursor:pointer;touch-action:manipulation}
+button:disabled{opacity:.35;cursor:default}
+input,select{font:inherit;color:inherit}
+:focus{outline:none}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+svg{display:block;flex:none}
+[hidden]{display:none!important}
+.vh{position:absolute!important;width:1px;height:1px;margin:-1px;padding:0;border:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.num{font-variant-numeric:tabular-nums}
+@keyframes pulse{50%{opacity:.35}}
+@keyframes rise{from{transform:translateY(100%)}to{transform:none}}
+@keyframes pop{from{transform:scale(.94);opacity:0}to{transform:none;opacity:1}}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+@keyframes fresh{from{background:var(--tint)}to{background:transparent}}
+
+/* ---------- top bar ---------- */
+.top{position:sticky;top:0;z-index:30;padding-top:env(safe-area-inset-top);background:var(--bg)}
+@supports ((-webkit-backdrop-filter:blur(1px)) or (backdrop-filter:blur(1px))){
+  .top{background:var(--bar-bg);-webkit-backdrop-filter:saturate(1.8) blur(18px);backdrop-filter:saturate(1.8) blur(18px)}
+}
+.top-in{max-width:760px;margin:0 auto;height:54px;display:flex;align-items:center;gap:8px;
+  padding:0 max(14px,env(safe-area-inset-right)) 0 max(16px,env(safe-area-inset-left))}
+.brand{margin:0;font-size:22px;line-height:1;font-weight:800;letter-spacing:-.025em;white-space:nowrap}
+.brand b{font-weight:800;color:var(--accent)}
+.top-actions{margin-left:auto;display:flex;align-items:center;gap:8px}
+.status{height:34px;min-width:34px;padding:0 11px;border-radius:17px;background:var(--fill);display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  color:var(--text2);font-size:13px;font-weight:600;white-space:nowrap}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--text3);flex:none}
+.status[data-state="ready"]{color:var(--good)}
+.status[data-state="ready"] .dot{background:var(--good)}
+.status[data-state="saving"] .dot{background:var(--warn);animation:pulse 1.2s ease-in-out infinite}
+.hbtn{width:34px;height:34px;border-radius:17px;background:var(--fill);display:grid;place-items:center;color:var(--text)}
+.hbtn:active,.status:active{background:var(--fill-strong)}
+.add-btn{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:var(--accent-bg);color:#fff;
+  box-shadow:0 6px 14px -5px rgba(14,116,144,.7);transition:transform .12s}
+.add-btn:active{transform:scale(.92)}
+@media (max-width:374px){.status #statusText{display:none}.status{padding:0}}
+
+/* ---------- page ---------- */
+.main{max-width:760px;margin:0 auto;padding:2px max(16px,env(safe-area-inset-right)) calc(128px + env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left))}
+.block{margin-top:18px}
+.block-head{display:flex;align-items:center;gap:8px;min-height:34px;margin:0 2px 8px 4px}
+.block-title{margin:0;font-size:20px;font-weight:750;letter-spacing:-.015em}
+.block-title .count{margin-left:6px;color:var(--text3);font-weight:650}
+.head-actions{margin-left:auto;display:flex;gap:2px}
+.link{height:34px;padding:0 10px;border-radius:17px;color:var(--accent);font-weight:600;font-size:15px;white-space:nowrap}
+.link:active{background:var(--tint)}
+.link.strong{font-weight:700}
+.note{margin:8px 4px 0;font-size:13px;line-height:1.4;color:var(--text2)}
+.banner{display:flex;gap:10px;align-items:flex-start;margin-top:12px;padding:10px 12px;border-radius:14px;background:var(--tint);font-size:14px;line-height:1.38}
+.banner .ico{color:var(--accent);margin-top:1px}
+.banner.warn{background:var(--warn-tint)}
+.banner.warn .ico{color:var(--warn)}
+.banner p{margin:0}
+
+/* output choice: Speech / Music / Original */
+.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;padding:2px;border-radius:12px;background:var(--fill)}
+.seg button{height:40px;border-radius:10px;font-weight:650;font-size:15px;color:var(--text)}
+.seg button[aria-checked="true"]{background:var(--panel);color:var(--accent);box-shadow:0 1px 3px rgba(0,0,0,.14),0 0 0 .5px rgba(0,0,0,.04)}
+.seg button:disabled{opacity:.4}
+
+/* the empty state */
+.empty{background:var(--panel);border-radius:18px;padding:24px 18px 18px;text-align:center}
+.empty-art{width:64px;height:64px;margin:0 auto 12px;border-radius:18px;background:var(--tint);color:var(--accent);display:grid;place-items:center}
+.empty h3{margin:0 0 4px;font-size:18px;font-weight:700}
+.empty>p{margin:0 auto;max-width:440px;color:var(--text2);font-size:14.5px}
+.btn-big{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:48px;padding:0 22px;border-radius:24px;background:var(--accent-bg);color:#fff;
+  font-weight:650;font-size:16px;white-space:nowrap;transition:transform .12s}
+.btn-big:active:not(:disabled){transform:scale(.97)}
+.btn-big.plain{background:var(--fill-strong);color:var(--text)}
+.empty .btn-big{margin-top:16px;padding-left:18px}
+.tip{display:flex;gap:10px;text-align:left;margin-top:16px;padding:12px;border-radius:12px;background:var(--fill);font-size:13.5px;line-height:1.42;color:var(--text2)}
+.tip .ico{color:var(--accent);margin-top:1px}
+.tip b{color:var(--text);font-weight:650}
+.tip p{margin:0}
+.tip p+p{margin-top:6px}
+.empty.compact{padding:16px}
+.empty.compact .empty-art,.empty.compact>p,.empty.compact .tip{display:none}
+.empty.compact h3{display:none}
+.empty.compact .btn-big{margin-top:0}
+
+/* recordings waiting to be extracted */
+.cards{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.card{display:flex;gap:12px;padding:12px;background:var(--panel);border-radius:16px}
+.thumb{position:relative;flex:none;width:62px;height:88px;border-radius:10px;overflow:hidden;background:var(--fill);display:grid;place-items:center;color:var(--text3)}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.thumb .badge{position:absolute;left:4px;right:4px;bottom:4px;padding:1px 0;border-radius:6px;background:rgba(0,0,0,.62);color:#fff;font-size:11px;font-weight:650;text-align:center;font-variant-numeric:tabular-nums}
+.card-body{flex:1;min-width:0;display:flex;flex-direction:column;gap:5px}
+.name-row{display:flex;align-items:center;gap:4px;margin-top:-2px}
+.name-wrap{flex:1;min-width:0;display:flex;align-items:baseline;padding:3px 6px;margin-left:-6px;border-radius:8px;cursor:text}
+.name-wrap:focus-within{background:var(--bg);box-shadow:inset 0 0 0 2px var(--accent)}
+.name{flex:1;min-width:0;width:100%;border:0;background:none;padding:0;font-size:16px;font-weight:650;text-overflow:ellipsis}
+.ext{flex:none;font-size:16px;color:var(--text3);font-weight:500}
+.icon-btn{flex:none;width:36px;height:36px;border-radius:18px;display:grid;place-items:center;color:var(--text3)}
+.icon-btn:active:not(:disabled){background:var(--fill)}
+.icon-btn.accent{color:var(--accent)}
+.meta{font-size:13px;color:var(--text2);font-variant-numeric:tabular-nums}
+.trim-row{display:flex;align-items:center;gap:8px}
+.trim-text{flex:1;min-width:0;display:flex;align-items:center;gap:5px;font-size:14px;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden}
+.trim-text .ico{color:var(--text3)}
+.trim-text span{overflow:hidden;text-overflow:ellipsis}
+.pill-btn{flex:none;height:32px;padding:0 13px 0 10px;border-radius:16px;background:var(--tint);color:var(--accent);font-weight:650;font-size:14px;display:inline-flex;align-items:center;gap:5px}
+.pill-btn:active:not(:disabled){filter:brightness(.92)}
+.select{-webkit-appearance:none;appearance:none;height:32px;max-width:100%;padding:0 30px 0 12px;border:0;border-radius:16px;font-size:14px;font-weight:600;color:var(--text);
+  background:var(--fill) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 4.5 6 8l3.5-3.5' fill='none' stroke='%238E8E93' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 11px center/12px}
+.progress{height:6px;border-radius:3px;background:var(--fill);overflow:hidden}
+.progress i{display:block;height:100%;width:0;border-radius:3px;background:var(--accent-bg);transition:width .25s linear}
+.state{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 12px;font-size:13.5px;line-height:1.35;color:var(--text2)}
+.state.good{color:var(--good)}
+.state.warn{color:var(--warn)}
+.state.bad{color:var(--danger)}
+.state button{color:var(--accent);font-weight:650;padding:2px 0}
+.card.is-done .thumb{opacity:.6}
+.add-more{width:100%;height:46px;margin-top:10px;border-radius:14px;border:1.5px dashed var(--fill-strong);color:var(--accent);font-weight:650;display:flex;align-items:center;justify-content:center;gap:6px}
+.add-more:active{background:var(--tint)}
+
+/* finished audio files */
+.results{list-style:none;margin:0;padding:0;background:var(--panel);border-radius:16px;overflow:hidden}
+.res{position:relative;display:flex;align-items:center;gap:10px;min-height:62px;padding:8px 4px 8px 12px}
+.res+.res::before{content:"";position:absolute;top:0;left:58px;right:0;height:1px;transform:scaleY(.5);transform-origin:top;background:var(--sep)}
+.res.fresh{animation:fresh 2s ease-out}
+.play-btn{flex:none;width:36px;height:36px;border-radius:18px;background:var(--tint);color:var(--accent);display:grid;place-items:center}
+.res.playing .play-btn{background:var(--accent-bg);color:#fff}
+.res-text{flex:1;min-width:0}
+.res-title{font-size:15.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.res-meta{font-size:13px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
+.res-meta .warn{color:var(--warn);font-weight:600}
+.foot{margin:26px 4px 0;text-align:center;font-size:12.5px;color:var(--text3)}
+
+/* the bar at the bottom: Extract / progress / Cancel */
+.bar{position:fixed;left:0;right:0;bottom:0;z-index:25;padding:10px 0 calc(10px + env(safe-area-inset-bottom));background:var(--bg);box-shadow:0 -.5px 0 var(--sep)}
+@supports ((-webkit-backdrop-filter:blur(1px)) or (backdrop-filter:blur(1px))){
+  .bar{background:var(--bar-bg);-webkit-backdrop-filter:saturate(1.8) blur(18px);backdrop-filter:saturate(1.8) blur(18px)}
+}
+.bar-in{max-width:760px;margin:0 auto;display:flex;align-items:center;gap:12px;padding:0 max(16px,env(safe-area-inset-right)) 0 max(16px,env(safe-area-inset-left))}
+.bar-text{flex:1;min-width:0}
+.bar-title{display:block;font-size:16px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar-sub{display:block;font-size:13px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
+.bar .progress{margin-top:6px}
+.bar .btn-big{min-width:112px}
+
+/* ---------- sheets, dialogs, toast ---------- */
+.sheet-wrap{position:fixed;inset:0;z-index:60;display:flex;flex-direction:column;justify-content:flex-end}
+.backdrop{position:absolute;inset:0;background:rgba(0,0,0,.4);animation:fade .2s ease-out}
+.sheet{position:relative;width:100%;max-width:560px;margin:0 auto;max-height:88vh;max-height:88dvh;overflow:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;
+  background:var(--sheet-bg);border-radius:18px 18px 0 0;padding:6px 16px calc(14px + env(safe-area-inset-bottom));animation:rise .28s cubic-bezier(.2,.9,.25,1)}
+.sheet-wrap.dialog{justify-content:flex-start;padding:calc(env(safe-area-inset-top) + 9vh) 16px 0}
+.sheet-wrap.dialog .sheet{max-width:420px;border-radius:18px;padding:18px 16px 16px;animation:pop .2s ease-out}
+.grabber{width:38px;height:5px;border-radius:3px;background:var(--fill-strong);margin:4px auto 10px}
+.sheet-title{margin:4px 8px 2px;text-align:center;font-size:17px;font-weight:700;overflow-wrap:anywhere}
+.sheet-sub{margin:2px 8px 4px;text-align:center;font-size:13px;color:var(--text2);overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+.acts{margin-top:12px;background:var(--sheet-card);border-radius:14px;overflow:hidden}
+.act{position:relative;width:100%;display:flex;align-items:center;gap:14px;min-height:52px;padding:9px 16px;text-align:left;font-size:17px;background:var(--sheet-card)}
+.act+.act::before{content:"";position:absolute;top:0;left:52px;right:0;height:1px;transform:scaleY(.5);transform-origin:top;background:var(--sep)}
+.act>.ico{color:var(--accent)}
+.act.danger,.act.danger>.ico{color:var(--danger)}
+.act:active{background:var(--fill)}
+.act-text{flex:1;min-width:0}
+.act.cancel{justify-content:center;margin-top:10px;border-radius:14px;font-weight:650;color:var(--accent)}
+.field{width:100%;height:48px;margin:14px 0;padding:0 14px;border-radius:12px;border:0;background:var(--sheet-card);color:var(--text);font-size:17px;box-shadow:inset 0 0 0 1px var(--sep)}
+.field:focus{box-shadow:inset 0 0 0 2px var(--accent)}
+.dialog-text{margin:10px 6px 16px;text-align:center;font-size:15px;color:var(--text2)}
+.dialog-btns{display:flex;gap:10px}
+.btn{flex:1;height:48px;border-radius:12px;background:var(--fill);font-weight:650}
+.btn:active{background:var(--fill-strong)}
+.btn.primary{background:var(--accent-bg);color:#fff}
+.btn.danger{background:var(--danger);color:#fff}
+.details{margin:12px 0 0;padding:12px;border-radius:12px;background:var(--sheet-card);font:12px/1.45 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;white-space:pre-wrap;overflow-wrap:anywhere;color:var(--text2);-webkit-user-select:text;user-select:text}
+.help{margin-top:6px;background:var(--sheet-card);border-radius:14px;padding:4px 16px 14px;font-size:15px;line-height:1.45}
+.help h4{margin:14px 0 4px;font-size:15px;font-weight:700}
+.help p{margin:0;color:var(--text2)}
+.help p+p{margin-top:6px}
+.help a{color:var(--accent)}
+.help-status{display:flex;align-items:center;gap:8px;margin-top:12px;padding:10px 12px;border-radius:12px;background:var(--fill);font-size:14px;font-weight:600}
+.help-status[data-state="ready"]{color:var(--good)}
+.help-status[data-state="ready"] .dot{background:var(--good)}
+.toast{position:fixed;left:50%;top:calc(env(safe-area-inset-top) + 10px);z-index:80;width:max-content;max-width:calc(100% - 32px);padding:11px 16px;border-radius:14px;
+  background:var(--toast-bg);color:var(--toast-fg);font-size:15px;font-weight:600;text-align:center;box-shadow:0 10px 26px rgba(0,0,0,.22);
+  transform:translate(-50%,-180%);opacity:0;transition:transform .3s cubic-bezier(.2,.9,.25,1),opacity .3s;pointer-events:none}
+.toast.show{transform:translate(-50%,0);opacity:1}
+.drop{position:fixed;inset:0;z-index:70;display:grid;place-items:center;background:rgba(14,116,144,.16);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);pointer-events:none}
+.drop-box{padding:26px 34px;border-radius:20px;border:2.5px dashed var(--accent);background:var(--panel);color:var(--accent);font-size:18px;font-weight:700;box-shadow:var(--shadow)}
+.old{max-width:520px;margin:40px auto;padding:18px 20px;border-radius:16px;background:var(--panel);font-size:15px;line-height:1.45}
+.old b{display:block;margin-bottom:4px}
+
+/* ---------- the trim editor ---------- */
+.ed-backdrop{position:fixed;inset:0;z-index:49;background:rgba(0,0,0,.45);animation:fade .2s ease-out}
+.ed{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;background:var(--sheet-bg);
+  padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);animation:rise .3s cubic-bezier(.2,.9,.25,1)}
+.ed-top{flex:none;display:flex;align-items:center;gap:6px;height:52px;padding:0 6px}
+.ed-top .link{font-size:17px;min-width:76px}
+.ed-top .link:last-child{text-align:right}
+.ed-title{flex:1;min-width:0;text-align:center}
+.ed-title b{display:block;font-size:17px;font-weight:700}
+.ed-title span{display:block;font-size:12.5px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ed-main{flex:1;min-height:0;display:flex;flex-direction:column}
+.ed-stage{position:relative;flex:1;min-height:120px;margin:0 12px;border-radius:14px;overflow:hidden;background:var(--stage);display:grid;place-items:center;cursor:pointer}
+.ed-stage video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;display:block}
+.no-pic{position:relative;max-width:330px;padding:16px;text-align:center;color:#C7C7CC;font-size:14px;line-height:1.4}
+.no-pic .ico{margin:0 auto 8px;color:#8E8E93}
+.stage-play{position:absolute;left:50%;top:50%;width:62px;height:62px;margin:-31px 0 0 -31px;border-radius:50%;display:grid;place-items:center;color:#fff;
+  background:rgba(0,0,0,.45);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);pointer-events:none}
+.stage-play .ico{margin-left:3px}
+.ed-ctrl{flex:none;padding-bottom:6px}
+.ed-clock{display:flex;justify-content:center;align-items:baseline;gap:6px;margin:10px 0 8px;font-size:22px;font-weight:700;font-variant-numeric:tabular-nums}
+.ed-clock span{font-size:14px;font-weight:600;color:var(--text2)}
+.tl{position:relative;height:72px;margin:0 12px;padding:0 20px;touch-action:none;-webkit-user-select:none;user-select:none;cursor:pointer}
+.tl-in{position:relative;height:100%}
+.tl canvas{position:absolute;left:0;top:0;width:100%;height:100%;border-radius:3px;background:var(--wave-bg)}
+.shade{position:absolute;top:0;bottom:0;background:var(--trim-shade);pointer-events:none}
+.shade.l{left:0}
+.shade.r{right:0}
+.sel{position:absolute;top:-4px;bottom:-4px;border:solid var(--trim);border-width:4px 20px;border-radius:10px;pointer-events:none}
+.sel::before,.sel::after{content:"";position:absolute;top:50%;width:8px;height:8px;margin-top:-5px;border:solid #fff;border-width:0 0 2.5px 2.5px}
+.sel::before{left:-13px;transform:rotate(45deg)}
+.sel::after{right:-13px;transform:rotate(-135deg)}
+.ph{position:absolute;top:-9px;bottom:-9px;left:0;width:2px;margin-left:-1px;border-radius:1px;background:var(--head);pointer-events:none;box-shadow:0 0 0 1px rgba(128,128,128,.25)}
+.wave-msg{position:absolute;inset:0;display:grid;place-items:center;padding:0 8px;text-align:center;font-size:13px;font-weight:600;color:var(--text2);pointer-events:none}
+.tl-ruler{position:relative;height:16px;margin:10px 32px 0;font-size:11px;font-weight:600;color:var(--text3);font-variant-numeric:tabular-nums}
+.tl-ruler span{position:absolute;top:0;transform:translateX(-50%);white-space:nowrap}
+.ed-keep{margin:4px 0 0;text-align:center;font-size:13px;color:var(--text2);font-variant-numeric:tabular-nums}
+.edges{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 12px 0}
+.edge{background:var(--sheet-card);border-radius:14px;padding:8px 8px 10px;text-align:center}
+.edge-label{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text2)}
+.edge-row{display:flex;align-items:center;gap:4px;margin-top:4px}
+.nudge{flex:none;width:40px;height:40px;border-radius:12px;background:var(--fill);display:grid;place-items:center}
+.nudge:active{background:var(--fill-strong)}
+.edge-time{flex:1;min-width:0;height:40px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;gap:5px;font-size:18px;font-weight:700;color:var(--accent);font-variant-numeric:tabular-nums}
+.edge-time:active{background:var(--tint)}
+.edge-set{margin-top:6px;width:100%;height:34px;border-radius:10px;background:var(--tint);color:var(--accent);font-weight:650;font-size:14px}
+.ed-bottom{display:flex;align-items:center;gap:10px;margin:12px 12px 4px}
+.ed-bottom .side{flex:1;min-width:0;height:44px;border-radius:12px;background:var(--fill);font-weight:650;font-size:14.5px;display:flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap}
+.ed-bottom .side:active:not(:disabled){background:var(--fill-strong)}
+.round{flex:none;width:56px;height:56px;border-radius:28px;background:var(--accent-bg);color:#fff;display:grid;place-items:center;box-shadow:0 8px 18px -8px rgba(14,116,144,.8)}
+.round:active{transform:scale(.94)}
+.round .ico.play{margin-left:3px}
+.ed-hint{margin:8px 12px 0;text-align:center;font-size:12.5px;color:var(--text3)}
+@media (orientation:landscape) and (max-height:520px){
+  .ed-main{flex-direction:row}
+  .ed-stage{flex:1 1 44%;margin:0 0 8px 12px}
+  .ed-ctrl{flex:1 1 56%;overflow:auto;padding-bottom:8px}
+  .ed-clock{margin-top:0}
+}
+@media (min-width:900px) and (min-height:720px){
+  .ed{inset:4vh calc(50% - 440px);border-radius:20px;box-shadow:var(--shadow);padding:0;animation:pop .22s ease-out}
+}
+</style>
+<!-- Tells the browser where "mediabunny" lives, so the MP3 encoder file can find it. -->
+<script type="importmap">{ "imports": { "mediabunny": "./mediabunny.min.mjs" } }</script>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-in">
+    <h1 class="brand">Echo <b>Peel</b></h1>
+    <div class="top-actions">
+      <button class="status" id="statusBtn" type="button" data-state="none" aria-label="Offline status and help"><span class="dot"></span><span id="statusText">Checking…</span></button>
+      <button class="hbtn" id="helpBtn" type="button" aria-label="Help"></button>
+      <button class="add-btn" id="addBtn" type="button" aria-label="Add recordings"></button>
+    </div>
+  </div>
+</header>
+
+<main class="main" id="main">
+  <div id="banners"></div>
+
+  <section class="block" aria-labelledby="kindTitle">
+    <div class="block-head"><h2 class="block-title" id="kindTitle">Save the sound as</h2></div>
+    <div class="seg" id="kindSeg" role="radiogroup" aria-labelledby="kindTitle">
+      <button type="button" role="radio" data-kind="speech">Speech</button>
+      <button type="button" role="radio" data-kind="music">Music</button>
+      <button type="button" role="radio" data-kind="original">Original</button>
+    </div>
+    <p class="note" id="kindNote"></p>
+  </section>
+
+  <section class="block" aria-labelledby="recTitle">
+    <div class="block-head">
+      <h2 class="block-title" id="recTitle">Recordings</h2>
+      <div class="head-actions"><button class="link" id="clearDoneBtn" type="button" hidden>Clear finished</button></div>
+    </div>
+    <div class="empty" id="empty">
+      <div class="empty-art" id="emptyArt"></div>
+      <h3>Add a screen recording</h3>
+      <p>Choose one or more videos. Echo Peel takes the sound out and saves it as an MP3 you can keep in Files.</p>
+      <button class="btn-big" id="emptyAddBtn" type="button"></button>
+      <div class="tip" id="tip"></div>
+    </div>
+    <ul class="cards" id="cards" hidden></ul>
+    <button class="add-more" id="addMoreBtn" type="button" hidden></button>
+  </section>
+
+  <section class="block" id="resBlock" aria-labelledby="resTitle" hidden>
+    <div class="block-head">
+      <h2 class="block-title" id="resTitle">Audio files<span class="count" id="resCount"></span></h2>
+      <div class="head-actions">
+        <button class="link" id="saveAllBtn" type="button">Save all</button>
+        <button class="link" id="clearAllBtn" type="button">Clear</button>
+      </div>
+    </div>
+    <ul class="results" id="results"></ul>
+    <p class="note">Kept in Echo Peel on this device until you clear them.</p>
+  </section>
+
+  <p class="foot" id="foot">Echo Peel · works offline · nothing leaves this device</p>
+</main>
+
+<div class="bar" id="bar" hidden>
+  <div class="bar-in">
+    <div class="bar-text">
+      <b class="bar-title" id="barTitle"></b>
+      <span class="bar-sub" id="barSub"></span>
+      <div class="progress" id="barProgress" hidden><i id="barFill"></i></div>
+    </div>
+    <button class="btn-big" id="barBtn" type="button">Extract</button>
+  </div>
+</div>
+
+<input class="vh" type="file" id="picker" multiple tabindex="-1" aria-hidden="true"
+  accept="video/*,audio/*,.mov,.mp4,.m4v,.m4a,.mp3,.aac,.wav,.webm,.mkv,.ogg,.oga,.opus,.flac,.caf,.3gp,.ts">
+<div class="drop" id="drop" hidden><div class="drop-box">Drop recordings to add them</div></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div id="layer"></div>
+
+<div class="old" id="old" hidden><b>Echo Peel didn’t start.</b><span id="oldText">It needs iOS 16.4 or later, or a recent Chrome, Edge or Safari.</span></div>
+<script>
+  // A safety net: if the app's main code hasn't started after 12 seconds, say why instead of showing a dead page.
+  setTimeout(function () {
+    if (window.__echoPeelStarted) return;
+    if (location.protocol === 'file:') document.getElementById('oldText').textContent = 'Open it from its web address (your GitHub Pages link). It can’t run from a file in a folder.';
+    document.getElementById('old').hidden = false;
+  }, 12000);
+</script>
+
+<script type="module">
+/* =====================================================================
+   ECHO PEEL
+   Takes the sound out of screen recordings and other videos.
+
+   How it works, in short:
+   1. Mediabunny (a media library) opens the video file and finds its sound
+      track. It reads the file in small pieces, so even a huge recording
+      never has to fit in memory at once.
+   2. For an MP3, the browser's own decoder (WebCodecs) turns the compressed
+      sound into plain numbers, which we trim and mix here, and the LAME MP3
+      encoder (in its own background worker) packs them into an MP3.
+   3. For "Original", nothing is decoded: the compressed sound is copied as
+      it is into a new, sound-only file. That is instant and loses nothing.
+   Finished files are kept in the browser's database (IndexedDB) on this
+   device, so they survive closing the app.
+   ===================================================================== */
+import * as MB from 'mediabunny';
+import { registerMp3Encoder } from './mediabunny-mp3-encoder.min.mjs';
+
+window.__echoPeelStarted = true;   // tells the safety net above that the app loaded
+
+/* ---------- 1. Settings ---------- */
+const VERSION = '1.0';
+const OUTPUTS = {
+  speech: { label: 'Speech', name: 'Speech MP3', note: 'MP3, mono, 96 kbps: about 0.7 MB a minute. Clear voices in small files.' },
+  music: { label: 'Music', name: 'Music MP3', note: 'MP3, stereo, 192 kbps: about 1.4 MB a minute. Keeps left and right.' },
+  original: { label: 'Original', name: 'Original sound', note: 'The video’s own sound, copied as it is: instant, no quality lost. Usually an .m4a file.' },
+};
+const PEAKS_PER_SEC = 100;       // waveform detail in the trim editor: one column per 1/100 s
+const NUDGE = 0.1;               // seconds moved by the − and + buttons
+const MIN_LENGTH = 0.2;          // the shortest part you can keep, in seconds
+const EDGE_LISTEN = 2.5;         // seconds played when you tap a start or end time
+const BLOCK = 16384;             // frames handled per step while making an MP3 (about a third of a second)
+const PRE_ROLL = 3;              // extra compressed packets kept before a trimmed start when copying (see copySound)
+const SILENT_PEAK = 0.001;       // a file whose loudest moment is below this (−60 dB) counts as silent
+const MP3_RATES = [48000, 44100, 32000, 24000, 22050, 16000, 12000, 11025, 8000];  // the only rates MP3 allows
+const IOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const TOUCH = IOS || matchMedia('(hover: none) and (pointer: coarse)').matches;
+// Phones use the share sheet (Save to Files, AirDrop…). Computers download instead.
+const SHARE = TOUCH && typeof navigator.share === 'function' && typeof navigator.canShare === 'function';
+// WebCodecs' AudioDecoder decodes compressed sound. Safari has it from iOS 26; Chrome and Edge for years.
+const CAN_DECODE = typeof AudioDecoder !== 'undefined';
+
+/* ---------- 2. What the app knows right now ---------- */
+const S = {
+  kind: loadPref('kind', 'speech'),  // speech | music | original
+  items: [],      // recordings you added (they live only while the app is open)
+  results: [],    // finished audio files (kept in the database)
+  running: false, // true while extracting
+  stop: false,    // set by Cancel
+  run: null,      // the current batch: { items, made }
+  current: null,  // the recording being extracted
+  playingId: null,
+};
+if (!OUTPUTS[S.kind]) S.kind = 'speech';
+
+/* ---------- 3. Small helpers ---------- */
+const $ = (id) => document.getElementById(id);
+const el = {
+  statusBtn: $('statusBtn'), statusText: $('statusText'), helpBtn: $('helpBtn'), addBtn: $('addBtn'),
+  banners: $('banners'), kindSeg: $('kindSeg'), kindNote: $('kindNote'),
+  clearDoneBtn: $('clearDoneBtn'), empty: $('empty'), emptyArt: $('emptyArt'), emptyAddBtn: $('emptyAddBtn'), tip: $('tip'),
+  cards: $('cards'), addMoreBtn: $('addMoreBtn'),
+  resBlock: $('resBlock'), resCount: $('resCount'), results: $('results'), saveAllBtn: $('saveAllBtn'), clearAllBtn: $('clearAllBtn'),
+  bar: $('bar'), barTitle: $('barTitle'), barSub: $('barSub'), barProgress: $('barProgress'), barFill: $('barFill'), barBtn: $('barBtn'),
+  picker: $('picker'), drop: $('drop'), toast: $('toast'), layer: $('layer'), foot: $('foot'),
+};
+
+// Builds an element: h('button', { class: 'x', onclick: fn }, 'Label')
+function h(tag, props, ...kids) {
+  const node = document.createElement(tag);
+  if (props) for (const [key, val] of Object.entries(props)) {
+    if (val == null || val === false) continue;
+    if (key === 'class') node.className = val;
+    else if (key === 'text') node.textContent = val;
+    else if (key.startsWith('on') && typeof val === 'function') node.addEventListener(key.slice(2), val);
+    else if (val === true) node.setAttribute(key, '');
+    else node.setAttribute(key, val);
+  }
+  for (const kid of kids.flat(Infinity)) if (kid != null && kid !== false) node.append(kid);
+  return node;
+}
+
+// Line icons drawn on a 24 × 24 grid. A plain string is an outline; { fill: true } is a solid shape.
+const ICONS = {
+  plus: 'M12 5v14M5 12h14',
+  minus: 'M5 12h14',
+  x: 'M6 6l12 12M18 6 6 18',
+  scissors: 'M8.6 8.6 20 20M8.6 15.4 20 4M6.5 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5zM6.5 19.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z',
+  play: { d: 'M8 5.6v12.8a1 1 0 0 0 1.5.86l10.2-6.4a1 1 0 0 0 0-1.72L9.5 4.74A1 1 0 0 0 8 5.6z', fill: true },
+  pause: { d: 'M7 5h3.4v14H7zM13.6 5H17v14h-3.4z', fill: true },
+  share: 'M12 3.5v11M8 7.5l4-4 4 4M7.5 10.5H6.5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2h-1',
+  download: 'M12 4v11M7.5 10.5 12 15l4.5-4.5M5 20h14',
+  more: { d: 'M6.6 12a1.6 1.6 0 1 1-3.2 0 1.6 1.6 0 0 1 3.2 0zm7 0a1.6 1.6 0 1 1-3.2 0 1.6 1.6 0 0 1 3.2 0zm7 0a1.6 1.6 0 1 1-3.2 0 1.6 1.6 0 0 1 3.2 0z', fill: true },
+  film: 'M4.5 4.5h15v15h-15zM8.5 4.5v15M15.5 4.5v15M4.5 9h4M4.5 15h4M15.5 9h4M15.5 15h4',
+  wave: 'M4 10.5v3M8 7.5v9M12 4.5v15M16 8.5v7M20 11v2',
+  peel: 'M5 4.5h9.5L19 9v10.5H5zM14.5 4.5V9H19M8.5 12.5v3M11 11v6M13.5 13v2',
+  trash: 'M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3',
+  pencil: 'M4 20h4.5L19 9.5 14.5 5 4 15.5zM12.5 7l4.5 4.5',
+  reset: 'M4 12a8 8 0 1 0 2.35-5.65M4 4.5V9h4.5',
+  help: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM9.6 9.4a2.5 2.5 0 1 1 3.4 2.35c-.6.25-1 .85-1 1.5v.55M12 17h.01',
+  info: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 11v6M12 7.6h.01',
+  warn: 'M12 4 2.8 19.5h18.4zM12 10v4.5M12 17.2h.01',
+  copy: 'M9 9h10v11H9zM5 15V4h10',
+  folder: 'M3 7.5A2.5 2.5 0 0 1 5.5 5H9l2 2.5h7.5A2.5 2.5 0 0 1 21 10v7.5a2.5 2.5 0 0 1-2.5 2.5h-13A2.5 2.5 0 0 1 3 17.5z',
+  loop: 'M17 4l3 3-3 3M20 7H8a4 4 0 0 0-4 4v1M7 20l-3-3 3-3M4 17h12a4 4 0 0 0 4-4v-1',
+};
+function icon(name, size = 20, cls = '') {
+  const NS = 'http://www.w3.org/2000/svg';
+  const def = typeof ICONS[name] === 'string' ? { d: ICONS[name] } : ICONS[name] || { d: '' };
+  const svg = document.createElementNS(NS, 'svg');
+  svg.setAttribute('viewBox', '0 0 24 24'); svg.setAttribute('width', size); svg.setAttribute('height', size);
+  svg.setAttribute('aria-hidden', 'true'); svg.setAttribute('class', ('ico ' + cls).trim());
+  const path = document.createElementNS(NS, 'path');
+  path.setAttribute('d', def.d);
+  if (def.fill) path.setAttribute('fill', 'currentColor');
+  else {
+    path.setAttribute('fill', 'none'); path.setAttribute('stroke', 'currentColor'); path.setAttribute('stroke-width', '2');
+    path.setAttribute('stroke-linecap', 'round'); path.setAttribute('stroke-linejoin', 'round');
+  }
+  svg.append(path);
+  return svg;
+}
+
+const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
+const round3 = (v) => Math.round(v * 1000) / 1000;
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+// 64 → "1:04"; with digits = 1, 1.25 → "0:01.3"
+function fmtTime(sec, digits = 0) {
+  if (!Number.isFinite(sec) || sec < 0) sec = 0;
+  const f = 10 ** digits;
+  let rest = Math.round(sec * f) / f;
+  const hours = Math.floor(rest / 3600); rest -= hours * 3600;
+  const mins = Math.floor(rest / 60); rest -= mins * 60;
+  const secs = rest.toFixed(digits).padStart(digits ? 3 + digits : 2, '0');
+  return hours ? `${hours}:${String(mins).padStart(2, '0')}:${secs}` : `${mins}:${secs}`;
+}
+function fmtBytes(n) {
+  if (n < 1000) return `${n} B`;
+  if (n < 1e6) return `${Math.round(n / 1000)} KB`;
+  if (n < 1e9) return `${(n / 1e6).toFixed(n < 1e7 ? 1 : 0)} MB`;
+  return `${(n / 1e9).toFixed(1)} GB`;
+}
+const fmtRate = (hz) => `${+(hz / 1000).toFixed(hz % 1000 ? 1 : 0)} kHz`;
+const chText = (n) => (n === 1 ? 'mono' : n === 2 ? 'stereo' : `${n} channels`);
+function codecName(c) {
+  if (!c) return 'an unknown kind';
+  if (c.startsWith('pcm') || c === 'ulaw' || c === 'alaw') return 'uncompressed';
+  return { aac: 'AAC', opus: 'Opus', mp3: 'MP3', vorbis: 'Vorbis', flac: 'FLAC', ac3: 'AC-3', eac3: 'E-AC-3', dts: 'DTS' }[c] || c.toUpperCase();
+}
+
+// File names: remove characters Windows and Files don't allow.
+const cleanName = (s) => String(s || '').replace(/:/g, '.').replace(/[\\/*?"<>|\u0000-\u001F]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 120);
+function baseName(file) {
+  let n = String(file.name || '').replace(/\.[^.]{1,5}$/, '');
+  // Videos picked from Photos sometimes arrive with a long random name like "trim.3F2A…". Use the date instead.
+  if (/^(trim\.)?[0-9a-f]{8}-[0-9a-f]{4}-/i.test(n) || /^trim\./i.test(n)) {
+    const when = new Intl.DateTimeFormat(undefined, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }).format(new Date(file.lastModified || Date.now()));
+    n = 'Recording ' + when;
+  }
+  return cleanName(n) || 'Recording';
+}
+
+function loadPref(key, fallback) { try { return localStorage.getItem('echo-peel.' + key) || fallback; } catch (e) { return fallback; } }
+function savePref(key, val) { try { localStorage.setItem('echo-peel.' + key, val); } catch (e) { /* private mode: not remembered */ } }
+
+let toastTimer = 0;
+function toast(msg, ms = 2600) {
+  el.toast.textContent = msg;
+  el.toast.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.toast.classList.remove('show'), ms);
+}
+
+// Waits for one event (or fails on 'error' or after `ms` milliseconds).
+function waitFor(target, event, ms) {
+  return new Promise((resolve, reject) => {
+    const done = (ok, val) => { clearTimeout(timer); target.removeEventListener(event, onOk); target.removeEventListener('error', onErr); ok ? resolve(val) : reject(val); };
+    const onOk = (e) => done(true, e);
+    const onErr = () => done(false, new Error(`${event} failed`));
+    const timer = setTimeout(() => done(false, new Error(`${event} timed out`)), ms);
+    target.addEventListener(event, onOk);
+    target.addEventListener('error', onErr);
+  });
+}
+
+class UserError extends Error {}   // a problem we can explain in plain words
+class Stopped extends Error {}     // Cancel was tapped
+
+/* ---------- 4. The database: finished files stay on this device ---------- */
+const db = {
+  conn: null,
+  open() {
+    return new Promise((resolve, reject) => {
+      if (!window.indexedDB) return reject(new Error('no IndexedDB'));
+      const req = indexedDB.open('echo-peel', 1);
+      req.onupgradeneeded = () => req.result.createObjectStore('files', { keyPath: 'id' });
+      req.onsuccess = () => { this.conn = req.result; resolve(); };
+      req.onerror = () => reject(req.error);
+      req.onblocked = () => reject(new Error('The database is busy in another window.'));
+    });
+  },
+  // Runs one transaction and resolves when it has been safely written.
+  run(mode, work) {
+    return new Promise((resolve, reject) => {
+      if (!this.conn) return reject(new Error('no database'));
+      const tx = this.conn.transaction('files', mode);
+      let result;
+      work(tx.objectStore('files'), (r) => { result = r; });
+      tx.oncomplete = () => resolve(result);
+      tx.onerror = () => reject(tx.error);
+      tx.onabort = () => reject(tx.error || new Error('The database write was cancelled.'));
+    });
+  },
+  all() { return this.run('readonly', (store, set) => { const r = store.getAll(); r.onsuccess = () => set(r.result || []); }); },
+  put(rec) { return this.run('readwrite', (store) => store.put(rec)); },
+  del(id) { return this.run('readwrite', (store) => store.delete(id)); },
+};
+// Only these fields go into the database (never screen elements).
+const forDb = (r) => ({ id: r.id, name: r.name, ext: r.ext, mime: r.mime, kind: r.kind, size: r.size, duration: r.duration,
+  created: r.created, source: r.source, silent: r.silent, blob: r.blob });
+
+/* ---------- 5. Opening a recording ---------- */
+function addFiles(list) {
+  const files = [...(list || [])].filter((f) => f && f.size > 0);
+  if (!files.length) return;
+  for (const file of files) {
+    const item = { id: uid(), file, name: baseName(file), size: file.size, status: 'reading', message: '', detail: '',
+      trim: { start: 0, end: null }, choice: 0, tracks: [], duration: 0, hasVideo: false, progress: 0, thumb: null, peaks: null };
+    S.items.push(item);
+    el.cards.append(buildCard(item));
+    paintCard(item);
+    readQueue = readQueue.then(() => readRecording(item));
+  }
+  paintSections(); paintBar();
+  const lastCard = S.items[S.items.length - 1].ui.root;
+  requestAnimationFrame(() => lastCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' }));
+}
+let readQueue = Promise.resolve();
+
+// Looks inside the file: how long it is, whether it has a picture, and which sound tracks it holds.
+async function readRecording(item) {
+  if (!S.items.includes(item)) return;
+  try {
+    const input = new MB.Input({ source: new MB.BlobSource(item.file), formats: MB.ALL_FORMATS });
+    item.input = input;
+    const format = await input.getFormat();          // fails if this isn't a media file Mediabunny knows
+    item.format = format.name;
+    const audio = await input.getAudioTracks();
+    item.hasVideo = (await input.getVideoTracks()).length > 0;
+    item.duration = await input.computeDuration();
+    item.tracks = [];
+    for (const track of audio) {
+      let decodable = false;
+      try { decodable = CAN_DECODE && await track.canDecode(); } catch (e) { decodable = false; }
+      item.tracks.push({ track, codec: track.codec, rate: track.sampleRate, channels: track.numberOfChannels, decodable });
+    }
+    // Several sound tracks (an iPhone recording with the microphone on can have two): mix them by default.
+    item.choice = item.tracks.filter((t) => t.decodable).length > 1 ? 'all' : 0;
+    item.status = item.tracks.length ? 'ready' : 'nosound';
+    if (!(item.duration > 0)) { item.status = 'unreadable'; item.detail = detailsOf(item, new Error('The file reports no length.')); }
+  } catch (err) {
+    item.status = 'unreadable';
+    item.detail = detailsOf(item, err);
+  }
+  paintCard(item); paintSections(); paintBar();
+  if (item.hasVideo && item.status !== 'unreadable') queueThumb(item);
+}
+
+// The tracks to take the sound from: all decodable ones mixed, or one chosen track.
+function chosenTracks(item) {
+  if (item.choice === 'all') return item.tracks.filter((t) => t.decodable);
+  const one = item.tracks[item.choice] || item.tracks[0];
+  return one ? [one] : [];
+}
+const singleIndex = (item) => (item.choice === 'all' ? 0 : item.choice);
+const peaksKey = (item) => chosenTracks(item).map((t) => item.tracks.indexOf(t)).join('+');
+const trimOf = (item) => ({ start: item.trim.start, end: item.trim.end ?? item.duration });
+const trimLength = (item) => { const t = trimOf(item); return Math.max(0, t.end - t.start); };
+
+// Which file "Original" makes for each kind of compressed sound (the sound is copied, never re-encoded).
+function copyPlan(codec) {
+  if (codec === 'aac' || codec === 'ac3' || codec === 'eac3') return { make: () => new MB.Mp4OutputFormat({ fastStart: 'in-memory' }), ext: 'm4a', mime: 'audio/mp4' };
+  if (codec === 'mp3') return { make: () => new MB.Mp3OutputFormat(), ext: 'mp3', mime: 'audio/mpeg' };
+  if (codec === 'opus' || codec === 'vorbis') return { make: () => new MB.WebMOutputFormat(), ext: 'webm', mime: 'audio/webm' };
+  if (codec === 'flac') return { make: () => new MB.FlacOutputFormat(), ext: 'flac', mime: 'audio/flac' };
+  if (codec && (codec.startsWith('pcm-') || codec === 'ulaw' || codec === 'alaw')) {
+    const plan = { make: () => new MB.WavOutputFormat(), ext: 'wav', mime: 'audio/wav' };
+    return plan.make().getSupportedAudioCodecs().includes(codec) ? plan : null;
+  }
+  return null;
+}
+function extFor(item, kind = S.kind) {
+  if (kind !== 'original') return 'mp3';
+  const tr = item.tracks[singleIndex(item)];
+  return (tr && copyPlan(tr.codec)?.ext) || 'm4a';
+}
+
+// Why this recording can't be extracted with the chosen output (or null when it can).
+function blockedReason(item, kind = S.kind) {
+  if (!item.tracks.length) return null;
+  if (kind === 'original') {
+    const tr = item.tracks[singleIndex(item)];
+    return copyPlan(tr.codec) ? null : `Its sound (${codecName(tr.codec)}) can’t be copied as it is. Choose Speech or Music.`;
+  }
+  if (!chosenTracks(item).some((t) => t.decodable)) {
+    const what = codecName((chosenTracks(item)[0] || item.tracks[0]).codec);
+    return CAN_DECODE
+      ? `This browser can’t decode its sound (${what}), so it can’t make an MP3. Choose Original.`
+      : 'Making an MP3 needs iOS 26 or later (or Chrome or Edge on a computer). Choose Original.';
+  }
+  return null;
+}
+const isPending = (item) => (item.status === 'ready' || item.status === 'error') && !blockedReason(item);
+const canTrim = (item) => item.tracks.length > 0 && ['ready', 'error', 'done', 'waiting'].includes(item.status);
+
+/* ---------- 6. Thumbnails: one picture from each video ---------- */
+const thumbQueue = [];
+let thumbBusy = false;
+function queueThumb(item) { thumbQueue.push(item); if (!thumbBusy) nextThumb(); }
+async function nextThumb() {
+  thumbBusy = true;
+  while (thumbQueue.length) {
+    const item = thumbQueue.shift();
+    if (!S.items.includes(item)) continue;
+    try { item.thumb = await makeThumb(item.file, item.duration); } catch (e) { item.thumb = null; }
+    paintCard(item);
+  }
+  thumbBusy = false;
+}
+async function makeThumb(file, duration) {
+  const url = URL.createObjectURL(file);
+  const v = document.createElement('video');
+  v.muted = true; v.playsInline = true; v.preload = 'auto';
+  v.setAttribute('playsinline', ''); v.setAttribute('muted', '');
+  try {
+    v.src = url;
+    await waitFor(v, 'loadedmetadata', 6000);
+    if (!v.videoWidth) return null;                            // this browser can't show the picture
+    await Promise.race([v.play().catch(() => {}), sleep(1500)]); // iPhone only draws frames once a video has started
+    v.pause();
+    const len = duration || v.duration || 1;
+    v.currentTime = clamp(len * 0.15, 0, Math.max(0, len - 0.1)); // a little way in, past Control Center
+    await waitFor(v, 'seeked', 6000);
+    if (v.requestVideoFrameCallback) await new Promise((r) => { v.requestVideoFrameCallback(() => r()); setTimeout(r, 600); });
+    const w = 124, fullH = Math.round(w * v.videoHeight / v.videoWidth), hh = Math.min(fullH, 176);
+    const c = document.createElement('canvas'); c.width = w; c.height = hh;
+    const g = c.getContext('2d');
+    g.drawImage(v, 0, (hh - fullH) / 2, w, fullH);
+    if (g.getImageData(w >> 1, hh >> 1, 1, 1).data[3] === 0) return null;   // nothing was drawn
+    return c.toDataURL('image/jpeg', 0.72);
+  } finally {
+    v.removeAttribute('src'); v.load();
+    URL.revokeObjectURL(url);
+  }
+}
+
+/* ---------- 7. Reading decoded sound ----------
+   A TrackReader hands out the sound of one track as plain numbers (−1 … 1), one array per channel,
+   exactly between the trim start and end. It fills holes in a track with silence, and can convert to
+   another sample rate so that two tracks recorded at different rates can be mixed. */
+class TrackReader {
+  constructor(track, start, end) {
+    this.samples = new MB.AudioSampleSink(track).samples(start, end);  // decodes as we go
+    this.start = start; this.end = end;
+    this.rate = 0;            // samples per second, as decoded (known after the first piece)
+    this.channels = 0;
+    this.pos = 0;             // the next frame we expect, counted from the start of the recording
+    this.endPos = 0;
+    this.pieces = [];         // decoded pieces waiting to be handed out: { planes, length } (planes null = silence)
+    this.waiting = 0;         // frames waiting in `pieces`
+    this.used = 0;            // frames of pieces[0] already handed out
+    this.resampler = null;
+    this.finished = false;
+  }
+  async open() { while (!this.rate && !this.finished) await this.pull(); }
+  convertTo(rate) {
+    this.resampler = new LinearResampler(this.rate, rate, this.channels);
+    // open() may already have queued a piece at the old rate: convert it too, or this track would run late.
+    const queued = this.pieces;
+    this.pieces = []; this.waiting = 0; this.used = 0;
+    for (const p of queued) this.queue(p.planes, p.length);
+  }
+
+  // Decodes one more piece and keeps the part of it that lies inside the selection.
+  async pull() {
+    const next = await this.samples.next();
+    if (next.done) { this.finished = true; return; }
+    const sample = next.value;
+    try {
+      if (!this.rate) {
+        this.rate = sample.sampleRate;
+        this.channels = sample.numberOfChannels;
+        this.pos = Math.round(this.start * this.rate);
+        this.endPos = Math.round(this.end * this.rate);
+      }
+      const first = Math.round(sample.timestamp * this.rate);
+      const last = Math.min(first + sample.numberOfFrames, this.endPos);   // one past the last frame we want
+      const from = Math.max(first, this.pos);                               // skip what's before the start or already used
+      if (from - this.pos > 2) this.queue(null, from - this.pos);           // a hole in the track: silence
+      if (last > from) {
+        const n = last - from, planes = [];
+        for (let c = 0; c < this.channels; c++) {
+          const plane = new Float32Array(n);
+          sample.copyTo(plane, { planeIndex: Math.min(c, sample.numberOfChannels - 1), format: 'f32-planar', frameOffset: from - first, frameCount: n });
+          planes.push(plane);
+        }
+        this.queue(planes, n);
+        this.pos = last;
+      }
+      if (this.pos >= this.endPos || first >= this.endPos) this.stop();
+    } finally {
+      sample.close();   // frees the decoder's memory for this piece
+    }
+  }
+  queue(planes, length) {
+    if (this.resampler) {
+      if (planes) { planes = this.resampler.process(planes); length = planes[0].length; }
+      else length = this.resampler.silence(length);
+    }
+    if (length > 0) { this.pieces.push({ planes, length }); this.waiting += length; }
+  }
+  // Hands out up to `frames` frames per channel (fewer only at the very end).
+  async read(frames) {
+    while (this.waiting < frames && !this.finished) await this.pull();
+    const n = Math.min(frames, this.waiting);
+    const out = Array.from({ length: this.channels }, () => new Float32Array(n));   // starts as silence
+    let filled = 0;
+    while (filled < n) {
+      const piece = this.pieces[0];
+      const take = Math.min(n - filled, piece.length - this.used);
+      if (piece.planes) for (let c = 0; c < this.channels; c++) out[c].set(piece.planes[c].subarray(this.used, this.used + take), filled);
+      filled += take; this.used += take;
+      if (this.used === piece.length) { this.pieces.shift(); this.used = 0; }
+    }
+    this.waiting -= n;
+    return out;
+  }
+  stop() {
+    this.finished = true;
+    this.samples.return().catch(() => {});   // stops decoding and releases the decoder
+  }
+}
+
+// Changes the sample rate by drawing straight lines between neighbouring samples (the same method Mediabunny uses).
+// It remembers the last sample of each piece, so the pieces join seamlessly.
+class LinearResampler {
+  constructor(fromRate, toRate, channels) {
+    this.step = fromRate / toRate;           // input frames per output frame
+    this.t = 0;                              // where the next output frame falls, in input frames of the current piece
+    this.prev = new Float32Array(channels);  // the previous piece's last frame (position −1)
+  }
+  process(planes) {
+    const L = planes[0].length;
+    if (!L) return planes.map(() => new Float32Array(0));
+    const count = this.t > L - 1 ? 0 : Math.floor((L - 1 - this.t) / this.step) + 1;
+    const out = planes.map(() => new Float32Array(count));
+    planes.forEach((x, c) => {
+      const y = out[c], prev = this.prev[c];
+      let t = this.t;
+      for (let k = 0; k < count; k++, t += this.step) {
+        const i = Math.floor(t), f = t - i;
+        const a = i < 0 ? prev : x[i];
+        const b = i + 1 < L ? x[i + 1] : x[L - 1];
+        y[k] = a + (b - a) * f;
+      }
+      this.prev[c] = x[L - 1];
+    });
+    this.t += count * this.step - L;
+    return out;
+  }
+  silence(L) {
+    const count = this.t > L - 1 ? 0 : Math.floor((L - 1 - this.t) / this.step) + 1;
+    this.t += count * this.step - L;
+    this.prev.fill(0);
+    return count;
+  }
+}
+
+/* ---------- 8. Making the files ---------- */
+// The closest rate MP3 allows (never above the original), and a bitrate MP3 allows at that rate.
+function mp3Settings(kind, rate, channels) {
+  const encRate = MP3_RATES.find((r) => r <= rate) || 8000;
+  let bitrate = kind === 'speech' ? 96000 : channels === 1 ? 128000 : 192000;
+  if (encRate < 16000) bitrate = Math.min(bitrate, 64000);
+  else if (encRate < 32000) bitrate = Math.min(bitrate, 160000);
+  return { encRate, bitrate };
+}
+
+// Adds one track's channels into the mixed block (laid out channel after channel).
+function mixInto(block, outCh, frames, planes) {
+  const n = planes[0].length;
+  for (let c = 0; c < outCh; c++) {
+    const dest = block.subarray(c * frames, c * frames + n);
+    if (outCh === 1 && planes.length > 1) {
+      const g = 1 / planes.length;                 // stereo to mono: the average of the channels
+      for (const p of planes) for (let i = 0; i < n; i++) dest[i] += p[i] * g;
+    } else {
+      const p = planes[Math.min(c, planes.length - 1)];   // mono to stereo: the same sound on both sides
+      for (let i = 0; i < n; i++) dest[i] += p[i];
+    }
+  }
+}
+// Keeps every value between −1 and 1 (two loud tracks added together could go over) and returns the loudest.
+function limit(block) {
+  let peak = 0;
+  for (let i = 0; i < block.length; i++) {
+    let v = block[i];
+    if (v > 1) v = block[i] = 1; else if (v < -1) v = block[i] = -1;
+    const a = v < 0 ? -v : v;
+    if (a > peak) peak = a;
+  }
+  return peak;
+}
+
+// Speech or Music: decode → trim → mix → encode as MP3.
+async function encodeMp3(item, kind, { start, end, onProgress, stopped }) {
+  const tracks = chosenTracks(item).filter((t) => t.decodable);
+  if (!tracks.length) throw new UserError(blockedReason(item, kind) || 'This browser can’t decode this sound.');
+  const readers = tracks.map((t) => new TrackReader(t.track, start, end));
+  try {
+    for (const r of readers) await r.open();
+    const live = readers.filter((r) => r.rate > 0);
+    if (!live.length) throw new UserError('There’s no sound in the part you kept.');
+    const rate = live[0].rate;                         // the first track sets the rate; others are converted to it
+    for (const r of live.slice(1)) if (r.rate !== rate) r.convertTo(rate);
+    const outCh = kind === 'speech' ? 1 : Math.min(2, Math.max(...live.map((r) => r.channels)));
+    const { encRate, bitrate } = mp3Settings(kind, rate, outCh);
+
+    const output = new MB.Output({ format: new MB.Mp3OutputFormat(), target: new MB.BufferTarget() });
+    const source = new MB.AudioSampleSource({ codec: 'mp3', bitrate, ...(encRate !== rate ? { transform: { sampleRate: encRate } } : {}) });
+    output.addAudioTrack(source);
+    output.setMetadataTags({ title: item.name });
+    await output.start();
+
+    const total = Math.max(1, Math.round((end - start) * rate));
+    let written = 0, peak = 0;
+    try {
+      while (written < total) {
+        if (stopped()) throw new Stopped();
+        const want = Math.min(BLOCK, total - written);
+        const parts = await Promise.all(live.map((r) => r.read(want)));
+        const got = Math.max(...parts.map((p) => (p[0] ? p[0].length : 0)));
+        if (!got) break;                               // every track has ended
+        const block = new Float32Array(got * outCh);
+        for (const planes of parts) if (planes[0] && planes[0].length) mixInto(block, outCh, got, planes);
+        peak = Math.max(peak, limit(block));
+        const sample = new MB.AudioSample({ data: block, format: 'f32-planar', numberOfChannels: outCh, sampleRate: rate, timestamp: written / rate });
+        try { await source.add(sample); } finally { sample.close(); }
+        written += got;
+        onProgress(written / total);
+      }
+      if (!written) throw new UserError('There’s no sound in the part you kept.');
+      source.close();
+      await output.finalize();
+    } catch (err) {
+      if (output.state !== 'finalized' && output.state !== 'canceled') await output.cancel().catch(() => {});
+      throw err;
+    }
+    return { blob: new Blob([output.target.buffer], { type: 'audio/mpeg' }), ext: 'mp3', mime: 'audio/mpeg', duration: written / rate, peak };
+  } finally {
+    for (const r of readers) r.stop();
+  }
+}
+
+// Original: copy the compressed sound into a new sound-only file, without decoding it.
+async function copySound(item, { start, end, onProgress = () => {}, stopped = () => false }) {
+  const tr = item.tracks[singleIndex(item)];
+  const plan = tr && copyPlan(tr.codec);
+  if (!plan) throw new UserError(blockedReason(item, 'original') || 'This sound can’t be copied as it is.');
+  const sink = new MB.EncodedPacketSink(tr.track);
+  const decoderConfig = await tr.track.getDecoderConfig();
+  const firstPacket = await sink.getFirstPacket();
+  if (!firstPacket) throw new UserError('This recording’s sound track is empty.');
+  let from = firstPacket;
+  if (start > firstPacket.timestamp + 1e-6) {
+    const at = await sink.getPacket(start);
+    if (at) {
+      // Compressed sound needs the packets just before a cut to decode its first moment cleanly,
+      // so a trimmed copy starts a few packets (under 0.1 s) early. Nothing inside your selection is lost.
+      const lossy = !/^(flac|pcm|ulaw|alaw)/.test(tr.codec);
+      const back = lossy ? PRE_ROLL * (at.duration || 0) : 0;
+      from = back ? (await sink.getPacket(at.timestamp - back + 1e-6)) || firstPacket : at;
+    }
+  }
+  const output = new MB.Output({ format: plan.make(), target: new MB.BufferTarget() });
+  const source = new MB.EncodedAudioPacketSource(tr.codec);
+  output.addAudioTrack(source);
+  output.setMetadataTags({ title: item.name });
+  await output.start();
+  // The copy starts at time 0. (Starting exactly at 0 keeps the file free of "edit lists",
+  // which iPhones read in their own way and could cut the first few milliseconds.)
+  let t0 = null, lastEnd = 0, firstAdd = true;
+  try {
+    for await (const packet of sink.packets(from)) {
+      if (packet.timestamp >= end) break;
+      if (stopped()) throw new Stopped();
+      if (t0 === null) t0 = packet.timestamp;
+      await source.add(packet.clone({ timestamp: packet.timestamp - t0 }), firstAdd ? { decoderConfig } : undefined);
+      firstAdd = false;
+      lastEnd = packet.timestamp + packet.duration - t0;
+      onProgress((packet.timestamp - start) / Math.max(0.001, end - start));
+    }
+    if (t0 === null) throw new UserError('There’s no sound in the part you kept.');
+    source.close();
+    await output.finalize();
+  } catch (err) {
+    if (output.state !== 'finalized' && output.state !== 'canceled') await output.cancel().catch(() => {});
+    throw err;
+  }
+  return { blob: new Blob([output.target.buffer], { type: plan.mime }), ext: plan.ext, mime: plan.mime, duration: lastEnd, peak: null, t0 };
+}
+
+// The waveform for the trim editor: the loudest point in every 1/100 s, stored as 0–255.
+async function getPeaks(item, onProgress, stopped) {
+  const key = peaksKey(item);
+  if (item.peaks && item.peaks.key === key) return item.peaks.data;
+  const tracks = chosenTracks(item).filter((t) => t.decodable);
+  const n = Math.max(1, Math.ceil(item.duration * PEAKS_PER_SEC));
+  const data = new Uint8Array(n);
+  let buf = new Float32Array(4096);
+  for (let ti = 0; ti < tracks.length; ti++) {
+    for await (const sample of new MB.AudioSampleSink(tracks[ti].track).samples()) {
+      const frames = sample.numberOfFrames, rate = sample.sampleRate, ts = sample.timestamp;
+      try {
+        if (buf.length < frames) buf = new Float32Array(frames);
+        const perCol = rate / PEAKS_PER_SEC, pos = ts * rate;   // frames per column; where this piece starts
+        for (let c = 0; c < sample.numberOfChannels; c++) {
+          sample.copyTo(buf, { planeIndex: c, format: 'f32-planar' });
+          for (let i = 0; i < frames;) {
+            const col = Math.floor((pos + i) / perCol);
+            let stop = Math.ceil((col + 1) * perCol - pos);
+            if (stop <= i) stop = i + 1;
+            if (stop > frames) stop = frames;
+            let m = 0;
+            for (; i < stop; i++) { const v = buf[i] < 0 ? -buf[i] : buf[i]; if (v > m) m = v; }
+            if (col >= 0 && col < n) { const q = m >= 1 ? 255 : Math.round(m * 255); if (q > data[col]) data[col] = q; }
+          }
+        }
+      } finally {
+        sample.close();
+      }
+      if (stopped()) throw new Stopped();
+      onProgress((ti + Math.min(1, (ts + frames / rate) / item.duration)) / tracks.length);
+    }
+  }
+  item.peaks = { key, data };
+  return data;
+}
+
+/* ---------- 9. Extracting: the queue ---------- */
+function startRun() {
+  if (S.running) return;
+  const todo = S.items.filter(isPending);
+  if (!todo.length) return;
+  for (const it of todo) { it.status = 'waiting'; it.message = ''; it.progress = 0; paintCard(it); }
+  S.run = { items: todo, made: 0, firstResult: null };
+  runQueue();
+}
+async function runQueue() {
+  S.running = true; S.stop = false;
+  keepAwake(true);
+  paintKind(); paintBar();
+  const run = S.run;
+  for (const item of run.items) {
+    if (S.stop) break;
+    if (item.status !== 'waiting' || !S.items.includes(item)) continue;
+    S.current = item;
+    await extractOne(item);
+    if (item.status === 'done') run.made++;
+  }
+  for (const item of run.items) if (item.status === 'waiting') { item.status = 'ready'; paintCard(item); }
+  S.running = false; S.current = null;
+  keepAwake(false);
+  paintKind(); paintBar(); paintSections();
+  if (run.made) {
+    toast(run.made === 1 ? 'Your audio file is ready' : `${run.made} audio files are ready`);
+    const row = rows.get(run.firstResult);
+    if (row) row.root.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+}
+async function extractOne(item) {
+  const kind = S.kind;
+  item.status = 'working'; item.progress = 0; item.message = '';
+  paintCard(item); paintBar();
+  const { start, end } = trimOf(item);
+  const job = { start, end, stopped: () => S.stop, onProgress: (p) => { item.progress = clamp(p, 0, 1); scheduleProgress(); } };
+  try {
+    const out = kind === 'original' ? await copySound(item, job) : await encodeMp3(item, kind, job);
+    const rec = await saveResult(item, kind, out);
+    item.status = 'done';
+    if (!S.run.firstResult) S.run.firstResult = rec.id;
+  } catch (err) {
+    if (err instanceof Stopped) { item.status = 'ready'; item.message = 'Cancelled.'; }
+    else {
+      console.error(err);
+      item.status = 'error';
+      item.message = friendly(err);
+      item.detail = detailsOf(item, err);
+    }
+  }
+  paintCard(item); paintBar();
+}
+async function saveResult(item, kind, out) {
+  const rec = { id: uid(), name: uniqueName(item.name, out.ext), ext: out.ext, mime: out.mime, kind, size: out.blob.size,
+    duration: out.duration, created: Date.now(), source: item.file.name, silent: out.peak != null && out.peak < SILENT_PEAK, blob: out.blob };
+  try { await db.put(forDb(rec)); } catch (e) { rec.unsaved = true; }   // still usable until the app closes
+  S.results.unshift(rec);
+  fresh.add(rec.id);
+  setTimeout(() => fresh.delete(rec.id), 2500);
+  paintResults();
+  return rec;
+}
+function uniqueName(name, ext, except) {
+  const taken = new Set(S.results.filter((r) => r !== except).map((r) => `${r.name}.${r.ext}`.toLowerCase()));
+  let n = cleanName(name) || 'Recording', i = 2;
+  while (taken.has(`${n}.${ext}`.toLowerCase())) n = `${cleanName(name) || 'Recording'} ${i++}`;
+  return n;
+}
+function friendly(err) {
+  if (err instanceof UserError) return err.message;
+  const msg = String((err && err.message) || err);
+  if (err && err.name === 'QuotaExceededError') return 'This device is out of space for Echo Peel’s files. Delete some audio files or free up storage, then try again.';
+  if (/decod/i.test(msg)) return 'The sound couldn’t be decoded. Try Original, or tap Details to see why.';
+  return 'Something went wrong while extracting. Tap Details to see why.';
+}
+function detailsOf(item, err) {
+  return [
+    `Echo Peel ${VERSION}`,
+    `File: ${item.file.name} (${item.file.type || 'no type'}, ${item.size} bytes)`,
+    item.format ? `Format: ${item.format}, ${fmtTime(item.duration, 2)}${item.hasVideo ? ', with picture' : ''}` : '',
+    item.tracks.length ? `Sound tracks: ${item.tracks.map((t, i) => `#${i + 1} ${t.codec || '?'} ${t.rate} Hz ${t.channels} ch${t.decodable ? '' : ' (no decoder)'}`).join('; ')}` : '',
+    `Output: ${S.kind}; trim ${trimOf(item).start}–${trimOf(item).end}`,
+    `Error: ${err ? `${err.name || 'Error'}: ${err.message || err}` : 'none'}`,
+    `Browser: ${navigator.userAgent}`,
+  ].filter(Boolean).join('\n');
+}
+
+// Progress arrives many times a second; the screen is updated at most once per frame.
+let progressQueued = false;
+function scheduleProgress() {
+  if (progressQueued) return;
+  progressQueued = true;
+  requestAnimationFrame(() => { progressQueued = false; if (S.current) paintProgress(S.current); paintBar(); });
+}
+
+// Keeps the screen on while extracting (the iPhone pauses web apps when it goes to sleep).
+let wakeLock = null;
+async function keepAwake(on) {
+  try {
+    if (on && !wakeLock && navigator.wakeLock && document.visibilityState === 'visible') {
+      wakeLock = await navigator.wakeLock.request('screen');
+      wakeLock.addEventListener('release', () => { wakeLock = null; });
+    } else if (!on && wakeLock) { const w = wakeLock; wakeLock = null; await w.release(); }
+  } catch (e) { wakeLock = null; }
+}
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && S.running) keepAwake(true); });
+window.addEventListener('beforeunload', (e) => { if (S.running) { e.preventDefault(); e.returnValue = ''; } });
+
+/* ---------- 10. Drawing the main screen ---------- */
+function paintKind() {
+  for (const b of el.kindSeg.querySelectorAll('button')) {
+    const k = b.dataset.kind;
+    b.setAttribute('aria-checked', String(k === S.kind));
+    b.tabIndex = k === S.kind ? 0 : -1;
+    b.disabled = S.running || (k !== 'original' && !CAN_DECODE);
+  }
+  el.kindNote.textContent = OUTPUTS[S.kind].note;
+}
+function setKind(k) {
+  if (S.running || !OUTPUTS[k] || (k !== 'original' && !CAN_DECODE)) return;
+  S.kind = k; savePref('kind', k);
+  paintKind();
+  S.items.forEach(paintCard);
+  paintBar();
+}
+
+function buildCard(item) {
+  const ui = item.ui = {};
+  ui.thumb = h('button', { class: 'thumb', type: 'button', 'aria-label': 'Trim', onclick: () => openTrim(item) });
+  ui.name = h('input', { class: 'name', value: item.name, 'aria-label': 'File name', enterkeyhint: 'done', autocomplete: 'off', autocapitalize: 'off', spellcheck: 'false',
+    oninput: (e) => { item.name = e.target.value; },
+    onblur: () => { item.name = cleanName(item.name) || baseName(item.file); ui.name.value = item.name; },
+    onkeydown: (e) => { if (e.key === 'Enter') e.target.blur(); } });
+  ui.ext = h('span', { class: 'ext' });
+  ui.remove = h('button', { class: 'icon-btn', type: 'button', 'aria-label': 'Remove', onclick: () => removeItem(item) }, icon('x', 18));
+  ui.meta = h('div', { class: 'meta' });
+  ui.trimText = h('span');
+  ui.trimBtn = h('button', { class: 'pill-btn', type: 'button', onclick: () => openTrim(item) }, icon('scissors', 16), 'Trim');
+  ui.trackRow = h('div', { hidden: true });
+  ui.progress = h('div', { class: 'progress', hidden: true }, ui.fill = h('i'));
+  ui.state = h('div', { class: 'state', hidden: true, 'aria-live': 'polite' });
+  ui.root = h('li', { class: 'card' },
+    ui.thumb,
+    h('div', { class: 'card-body' },
+      h('div', { class: 'name-row' }, h('label', { class: 'name-wrap' }, ui.name, ui.ext), ui.remove),
+      ui.meta,
+      ui.trimRow = h('div', { class: 'trim-row' }, h('div', { class: 'trim-text' }, icon('scissors', 15), ui.trimText), ui.trimBtn),
+      ui.trackRow, ui.progress, ui.state));
+  return ui.root;
+}
+function paintCard(item) {
+  const ui = item.ui;
+  if (!ui) return;
+  const busy = item.status === 'working', reading = item.status === 'reading';
+  // picture
+  const pic = item.thumb ? h('img', { src: item.thumb, alt: '' }) : icon(item.status === 'reading' || item.hasVideo ? 'film' : 'wave', 26);
+  const badge = item.duration > 0 ? h('span', { class: 'badge', text: fmtTime(item.duration) }) : null;
+  if (ui.thumbKey !== `${!!item.thumb}|${item.hasVideo}|${item.duration}|${item.status === 'reading'}`) {
+    ui.thumbKey = `${!!item.thumb}|${item.hasVideo}|${item.duration}|${item.status === 'reading'}`;
+    ui.thumb.replaceChildren(pic, badge || '');
+  }
+  ui.thumb.disabled = !canTrim(item) || busy;
+  ui.ext.textContent = '.' + extFor(item);
+  ui.name.disabled = busy;
+  // details line
+  if (reading) ui.meta.textContent = 'Reading…';
+  else if (item.status === 'unreadable') ui.meta.textContent = fmtBytes(item.size);
+  else {
+    const t = item.tracks;
+    const sound = !t.length ? 'no sound' : t.length > 1 ? `${t.length} sound tracks` : `${chText(t[0].channels)} · ${fmtRate(t[0].rate)}`;
+    ui.meta.textContent = `${fmtTime(item.duration)} · ${fmtBytes(item.size)} · ${sound}`;
+  }
+  // trim
+  const tr = trimOf(item);
+  const whole = item.trim.start <= 0 && item.trim.end == null;
+  ui.trimText.textContent = reading || !item.duration ? '—' : whole ? 'Whole recording'
+    : `${fmtTime(tr.start, 1)} – ${fmtTime(tr.end, 1)} · ${fmtTime(tr.end - tr.start, 1)}`;
+  ui.trimBtn.disabled = !canTrim(item) || busy;
+  ui.trimRow.hidden = !reading && !item.tracks.length;   // nothing to trim in a file without sound
+  // several sound tracks: which one(s)
+  if (item.tracks.length > 1 && !ui.trackSel) {
+    ui.trackSel = h('select', { class: 'select', 'aria-label': 'Which sound to take', onchange: (e) => {
+      item.choice = e.target.value === 'all' ? 'all' : Number(e.target.value);
+      if (item.status === 'done') { item.status = 'ready'; item.message = 'Sound changed. Extract again to make a new file.'; }
+      paintCard(item); paintBar();
+    } });
+    if (item.tracks.filter((t) => t.decodable).length > 1) ui.trackSel.append(h('option', { value: 'all', text: 'All sound tracks, mixed' }));
+    item.tracks.forEach((t, i) => ui.trackSel.append(h('option', { value: String(i), text: `Track ${i + 1} only · ${chText(t.channels)}` })));
+    ui.trackRow.replaceChildren(ui.trackSel);
+  }
+  if (ui.trackSel) { ui.trackSel.value = String(item.choice); ui.trackSel.disabled = busy; }
+  ui.trackRow.hidden = !ui.trackSel;
+  ui.remove.disabled = busy;
+  ui.root.classList.toggle('is-done', item.status === 'done');
+  paintProgress(item);
+}
+// The part of a card that changes while extracting.
+function paintProgress(item) {
+  const ui = item.ui;
+  if (!ui) return;
+  const st = statusFor(item);
+  ui.state.hidden = !st;
+  if (st) {
+    ui.state.className = 'state' + (st.tone ? ' ' + st.tone : '');
+    const key = st.tone + '|' + st.text;
+    if (ui.stateKey !== key) {
+      ui.stateKey = key;
+      ui.state.replaceChildren(h('span', { text: st.text }), ...(st.actions || []).map(([label, fn]) => h('button', { type: 'button', text: label, onclick: fn })));
+    }
+  } else ui.stateKey = '';
+  ui.progress.hidden = item.status !== 'working' && item.status !== 'waiting';
+  ui.fill.style.width = `${(item.progress * 100).toFixed(1)}%`;
+}
+function statusFor(item) {
+  switch (item.status) {
+    case 'nosound': return { tone: 'warn', text: 'This recording has no sound track, so there’s nothing to extract.' };
+    case 'unreadable': return { tone: 'bad', text: 'Echo Peel can’t read this file. It may not be a video or a sound recording.', actions: [['Details', () => showDetails(item)]] };
+    case 'waiting': return { text: 'Waiting…' };
+    case 'working': return { text: `Extracting… ${Math.round(item.progress * 100)}%` };
+    case 'done': return { tone: 'good', text: 'Done. It’s under Audio files.', actions: [['Extract again', () => again(item)]] };
+    case 'error': return { tone: 'bad', text: item.message, actions: [['Details', () => showDetails(item)]] };
+    case 'ready': {
+      const why = blockedReason(item);
+      if (why) return { tone: 'warn', text: why };
+      if (S.kind === 'original' && item.choice === 'all') return { text: 'Original copies Track 1 only. Speech and Music mix all the tracks.' };
+      return item.message ? { text: item.message } : null;
+    }
+    default: return null;
+  }
+}
+function again(item) { item.status = 'ready'; item.message = ''; paintCard(item); paintBar(); }
+function removeItem(item) {
+  if (item.status === 'working') return;
+  S.items = S.items.filter((it) => it !== item);
+  item.ui.root.remove();
+  try { item.input?.dispose(); } catch (e) { /* already closed */ }
+  paintSections(); paintBar();
+}
+function clearFinished() {
+  for (const it of S.items.filter((x) => ['done', 'nosound', 'unreadable'].includes(x.status))) removeItem(it);
+}
+
+function paintSections() {
+  const has = S.items.length > 0;
+  el.empty.hidden = has;
+  el.empty.classList.toggle('compact', S.results.length > 0);
+  el.cards.hidden = !has;
+  el.addMoreBtn.hidden = !has;
+  el.clearDoneBtn.hidden = !S.items.some((x) => ['done', 'nosound', 'unreadable'].includes(x.status));
+  el.resBlock.hidden = !S.results.length;
+}
+
+function paintBar() {
+  const pending = S.items.filter(isPending);
+  if (S.running && S.run) {
+    const list = S.run.items, cur = S.current;
+    const i = Math.max(0, list.indexOf(cur));
+    el.bar.hidden = false;
+    el.barTitle.textContent = S.stop ? 'Cancelling…' : list.length > 1 ? `Extracting ${i + 1} of ${list.length}` : 'Extracting';
+    el.barSub.textContent = cur ? `${cur.name} · ${Math.round(cur.progress * 100)}%` : '';
+    el.barProgress.hidden = false;
+    el.barFill.style.width = `${(((i + (cur ? cur.progress : 0)) / list.length) * 100).toFixed(1)}%`;
+    el.barBtn.textContent = 'Cancel';
+    el.barBtn.className = 'btn-big plain';
+    el.barBtn.disabled = S.stop;
+  } else if (pending.length) {
+    el.bar.hidden = false;
+    el.barTitle.textContent = pending.length === 1 ? '1 recording ready' : `${pending.length} recordings ready`;
+    let bytes = 0;
+    if (S.kind !== 'original') for (const it of pending) {
+      const ch = S.kind === 'speech' ? 1 : Math.min(2, Math.max(...chosenTracks(it).map((t) => t.channels), 1));
+      bytes += trimLength(it) * (S.kind === 'speech' ? 96000 : ch === 1 ? 128000 : 192000) / 8;
+    }
+    el.barSub.textContent = OUTPUTS[S.kind].name + (bytes ? ` · about ${fmtBytes(Math.round(bytes))}` : '');
+    el.barProgress.hidden = true;
+    el.barBtn.textContent = 'Extract';
+    el.barBtn.className = 'btn-big';
+    el.barBtn.disabled = false;
+  } else {
+    el.bar.hidden = true;
+  }
+}
+
+/* ---------- 11. Finished audio files ---------- */
+const rows = new Map();    // file id → its row on screen
+const fresh = new Set();   // files made a moment ago (briefly highlighted)
+const fileName = (r) => `${r.name}.${r.ext}`;
+function resultMeta(r) {
+  return `${fmtTime(r.duration)} · ${fmtBytes(r.size)} · ${OUTPUTS[r.kind] ? OUTPUTS[r.kind].name : r.ext.toUpperCase()}`;
+}
+function buildRow(rec) {
+  const row = {};
+  row.play = h('button', { class: 'play-btn', type: 'button', 'aria-label': 'Play', onclick: () => togglePlay(rec) }, icon('play', 17));
+  row.root = h('li', { class: 'res' + (fresh.has(rec.id) ? ' fresh' : '') },
+    row.play,
+    h('div', { class: 'res-text' },
+      h('div', { class: 'res-title', text: fileName(rec) }),
+      h('div', { class: 'res-meta' }, resultMeta(rec), rec.silent ? h('span', { class: 'warn', text: ' · silent' }) : null)),
+    h('button', { class: 'icon-btn accent', type: 'button', 'aria-label': SHARE ? 'Save or share' : 'Download', onclick: () => saveFiles([rec]) }, icon(SHARE ? 'share' : 'download', 21)),
+    h('button', { class: 'icon-btn', type: 'button', 'aria-label': 'More', onclick: () => resultMenu(rec) }, icon('more', 20)));
+  rows.set(rec.id, row);
+  return row.root;
+}
+function paintResults() {
+  rows.clear();
+  el.results.replaceChildren(...S.results.map(buildRow));
+  el.resCount.textContent = S.results.length ? String(S.results.length) : '';
+  el.saveAllBtn.textContent = SHARE ? 'Save all' : 'Download all';
+  el.saveAllBtn.hidden = S.results.length < 2;
+  paintPlaying(); paintSections();
+}
+function resultMenu(rec) {
+  openSheet({
+    title: fileName(rec),
+    sub: resultMeta(rec) + (rec.source ? ` · from ${rec.source}` : ''),
+    body: rec.silent ? h('p', { class: 'note', style: 'text-align:center', text: 'This file is silent. If the app you recorded was muted (for example by Silent mode), its sound wasn’t in the recording.' }) : null,
+    actions: [
+      { label: SHARE ? 'Save or share…' : 'Download', icon: SHARE ? 'share' : 'download', run: () => saveFiles([rec]) },
+      { label: 'Rename', icon: 'pencil', run: () => renameResult(rec) },
+      { label: 'Delete', icon: 'trash', danger: true, run: () => deleteResults([rec]) },
+    ],
+  });
+}
+function renameResult(rec) {
+  const field = h('input', { class: 'field', value: rec.name, 'aria-label': 'New name', enterkeyhint: 'done', autocomplete: 'off', autocapitalize: 'off', spellcheck: 'false' });
+  const ok = async () => {
+    const v = cleanName(field.value);
+    closeSheet();
+    if (!v || v === rec.name) return;
+    rec.name = uniqueName(v, rec.ext, rec);
+    try { await db.put(forDb(rec)); } catch (e) { /* the new name lasts until the app closes */ }
+    paintResults();
+  };
+  field.addEventListener('keydown', (e) => { if (e.key === 'Enter') ok(); });
+  openSheet({ title: 'Rename', dialog: true, body: h('div', null, field, h('div', { class: 'dialog-btns' },
+    h('button', { class: 'btn', type: 'button', text: 'Cancel', onclick: closeSheet }),
+    h('button', { class: 'btn primary', type: 'button', text: 'Rename', onclick: ok }))) });
+  setTimeout(() => { field.focus(); field.select(); }, 60);
+}
+async function deleteResults(list) {
+  for (const r of list) {
+    if (S.playingId === r.id) stopPlayer();
+    try { await db.del(r.id); } catch (e) { /* not in the database */ }
+  }
+  const gone = new Set(list.map((r) => r.id));
+  S.results = S.results.filter((r) => !gone.has(r.id));
+  paintResults();
+  toast(list.length === 1 ? 'Deleted' : `Deleted ${list.length} files`);
+}
+function confirmClearAll() {
+  const n = S.results.length;
+  openSheet({ title: `Delete all ${plural(n, 'audio file')}?`, dialog: true, body: h('div', null,
+    h('p', { class: 'dialog-text', text: 'Copies you already saved to Files or elsewhere stay there.' }),
+    h('div', { class: 'dialog-btns' },
+      h('button', { class: 'btn', type: 'button', text: 'Cancel', onclick: closeSheet }),
+      h('button', { class: 'btn danger', type: 'button', text: 'Delete', onclick: () => { closeSheet(); deleteResults([...S.results]); } }))) });
+}
+
+// Saving: the share sheet on iPhone; downloads (or a folder) on a computer.
+const fileOf = (r) => new File([r.blob], fileName(r), { type: r.mime, lastModified: r.created });
+function saveFiles(list) {
+  const files = list.map(fileOf);
+  if (SHARE) {
+    let ok = false;
+    try { ok = navigator.canShare({ files }); } catch (e) { ok = false; }
+    if (ok) {
+      // Must run straight from the tap: iPhone only opens the share sheet in direct response to a touch.
+      navigator.share({ files }).catch((err) => { if (err && err.name !== 'AbortError') { toast('The share sheet didn’t open, so it’s downloading instead'); downloadFiles(files); } });
+      return;
+    }
+  }
+  if (files.length > 1 && typeof window.showDirectoryPicker === 'function') { saveToFolder(files); return; }
+  downloadFiles(files);
+}
+function downloadFiles(files) {
+  files.forEach((f, i) => setTimeout(() => {
+    const url = URL.createObjectURL(f);
+    const a = h('a', { href: url, download: f.name });
+    document.body.append(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
+  }, i * 450));
+}
+async function saveToFolder(files) {
+  let dir;
+  try { dir = await window.showDirectoryPicker({ id: 'echo-peel', mode: 'readwrite', startIn: 'music' }); }
+  catch (err) { if (err && err.name !== 'AbortError') downloadFiles(files); return; }
+  let saved = 0;
+  try {
+    for (const f of files) {
+      const name = await freeName(dir, f.name);
+      const handle = await dir.getFileHandle(name, { create: true });
+      const w = await handle.createWritable();
+      await w.write(f); await w.close();
+      saved++;
+    }
+    toast(`Saved ${plural(saved, 'file')} in “${dir.name}”`);
+  } catch (err) {
+    toast('Couldn’t save in that folder, so they’re downloading instead');
+    downloadFiles(files.slice(saved));
+  }
+}
+async function freeName(dir, name) {   // "talk.mp3" is taken? Use "talk 2.mp3".
+  const dot = name.lastIndexOf('.'), stem = name.slice(0, dot), ext = name.slice(dot);
+  let candidate = name;
+  for (let i = 2; ; i++) {
+    try { await dir.getFileHandle(candidate); } catch (e) { return candidate; }
+    candidate = `${stem} ${i}${ext}`;
+  }
+}
+
+// One player for listening to finished files.
+const player = new Audio();
+player.preload = 'auto';
+let playerUrl = null;
+function togglePlay(rec) {
+  if (S.playingId === rec.id && !player.paused) { player.pause(); return; }
+  if (S.playingId !== rec.id) {
+    if (playerUrl) URL.revokeObjectURL(playerUrl);
+    playerUrl = URL.createObjectURL(rec.blob);
+    player.src = playerUrl;
+    S.playingId = rec.id;
+  }
+  player.play().catch((err) => toast(`Can’t play it here: ${err.message}`));
+}
+function stopPlayer() { player.pause(); S.playingId = null; paintPlaying(); }
+function paintPlaying() {
+  for (const [id, row] of rows) {
+    const on = id === S.playingId && !player.paused;
+    row.root.classList.toggle('playing', on);
+    row.play.replaceChildren(icon(on ? 'pause' : 'play', 17));
+    row.play.setAttribute('aria-label', on ? 'Pause' : 'Play');
+  }
+}
+['play', 'pause', 'ended'].forEach((ev) => player.addEventListener(ev, paintPlaying));
+
+/* ---------- 12. Sheets (menus and small dialogs) ---------- */
+let sheetOpen = false, sheetReturn = null;
+function openSheet({ title, sub, body = null, actions = [], dialog = false }) {
+  closeSheet();
+  sheetReturn = document.activeElement;
+  const sheet = h('div', { class: 'sheet', role: 'dialog', 'aria-modal': 'true', 'aria-label': title || 'Options', tabindex: '-1' });
+  if (!dialog) sheet.append(h('div', { class: 'grabber' }));
+  if (title) sheet.append(h('div', { class: 'sheet-title', text: title }));
+  if (sub) sheet.append(h('div', { class: 'sheet-sub', text: sub }));
+  if (body) sheet.append(body);
+  const acts = actions.filter(Boolean);
+  if (acts.length) sheet.append(h('div', { class: 'acts' }, acts.map((a) => h('button', { class: 'act' + (a.danger ? ' danger' : ''), type: 'button',
+    onclick: () => { closeSheet(); a.run(); } }, icon(a.icon, 22), h('span', { class: 'act-text', text: a.label })))));
+  if (!dialog) sheet.append(h('button', { class: 'act cancel', type: 'button', text: 'Cancel', onclick: closeSheet }));
+  el.layer.replaceChildren(h('div', { class: 'sheet-wrap' + (dialog ? ' dialog' : '') }, h('div', { class: 'backdrop', onclick: closeSheet }), sheet));
+  sheetOpen = true;
+  if (!dialog) sheet.focus({ preventScroll: true });
+}
+function closeSheet() {
+  if (!sheetOpen) return;
+  sheetOpen = false;
+  el.layer.replaceChildren();
+  if (sheetReturn && sheetReturn.focus) sheetReturn.focus({ preventScroll: true });
+  sheetReturn = null;
+}
+function showDetails(item) {
+  const text = item.detail || 'No details.';
+  openSheet({ title: 'Details', sub: item.file.name, body: h('pre', { class: 'details', text }), actions: [
+    { label: 'Copy details', icon: 'copy', run: () => navigator.clipboard?.writeText(text).then(() => toast('Copied'), () => toast('Couldn’t copy')) },
+  ] });
+}
+
+/* ---------- 13. The trim editor ---------- */
+// Shows the video (or just the sound) with a waveform. Drag the two edges of the frame,
+// nudge them with − and +, or play to a moment and tap "Set at playhead".
+function openTrim(item) {
+  if (!canTrim(item) || item.status === 'working') return;
+  closeSheet(); stopPlayer();
+  const dur = Math.max(0.1, item.duration);
+  const t = { start: clamp(item.trim.start, 0, dur), end: clamp(item.trim.end ?? dur, 0, dur) };
+  if (t.end - t.start < MIN_LENGTH) { t.start = 0; t.end = dur; }
+  let playhead = t.start, stopAt = t.end, offset = 0, raf = 0, closed = false, canPlay = true, fallback = false;
+  let seekWanted = null, seekRaf = 0, drag = null, media = null;
+  let peaks = item.peaks && item.peaks.key === peaksKey(item) ? item.peaks.data : null;
+  const urls = [], lastFocus = document.activeElement, ui = {};
+  const GRAB = 26;   // how close (in pixels) a touch must be to an edge to grab it
+
+  // --- the picture (or a sound-only panel)
+  ui.noPic = h('div', { class: 'no-pic', hidden: true });
+  ui.stagePlay = h('div', { class: 'stage-play' }, icon('play', 28));
+  ui.stage = h('div', { class: 'ed-stage', onclick: () => togglePlayback() }, ui.noPic, ui.stagePlay);
+
+  // --- the timeline
+  ui.canvas = h('canvas');
+  ui.shadeL = h('div', { class: 'shade l' });
+  ui.shadeR = h('div', { class: 'shade r' });
+  ui.sel = h('div', { class: 'sel' });
+  ui.head = h('div', { class: 'ph' });
+  ui.waveMsg = h('div', { class: 'wave-msg', hidden: true });
+  ui.inner = h('div', { class: 'tl-in' }, ui.canvas, ui.shadeL, ui.shadeR, ui.waveMsg, ui.sel, ui.head);
+  ui.tl = h('div', { class: 'tl', role: 'group', 'aria-label': 'Timeline. Drag the edges of the frame to trim.' }, ui.inner);
+  ui.ruler = h('div', { class: 'tl-ruler', 'aria-hidden': 'true' });
+  ui.keep = h('p', { class: 'ed-keep' });
+  ui.now = h('b', { class: 'num' });
+  const clock = h('div', { class: 'ed-clock' }, ui.now, h('span', { text: '/ ' + fmtTime(dur, 1) }));
+
+  // --- start and end panels
+  const edge = (which) => {
+    const label = which === 'start' ? 'Start' : 'End';
+    const minus = h('button', { class: 'nudge', type: 'button', 'aria-label': `${label} ${NUDGE} s earlier` }, icon('minus', 18));
+    const plus = h('button', { class: 'nudge', type: 'button', 'aria-label': `${label} ${NUDGE} s later` }, icon('plus', 18));
+    const time = h('button', { class: 'edge-time', type: 'button', 'aria-label': `Hear the ${label.toLowerCase()}`,
+      onclick: () => (which === 'start' ? playFrom(t.start, Math.min(t.end, t.start + EDGE_LISTEN)) : playFrom(Math.max(t.start, t.end - EDGE_LISTEN), t.end)) },
+    icon('play', 12), h('span'));
+    const set = h('button', { class: 'edge-set', type: 'button', text: 'Set at playhead', onclick: () => setEdge(which, playhead) });
+    repeatButton(minus, () => nudge(which, -NUDGE));
+    repeatButton(plus, () => nudge(which, NUDGE));
+    ui[which + 'Time'] = time.lastChild;
+    return h('div', { class: 'edge' }, h('div', { class: 'edge-label', text: label }), h('div', { class: 'edge-row' }, minus, time, plus), set);
+  };
+
+  // --- buttons at the bottom
+  ui.play = h('button', { class: 'round', type: 'button', 'aria-label': 'Play', onclick: () => togglePlayback() });
+  ui.whole = h('button', { class: 'side', type: 'button', onclick: () => { t.start = 0; t.end = dur; paint(); } }, icon('reset', 18), 'Whole');
+  ui.hearSel = h('button', { class: 'side', type: 'button', onclick: () => playFrom(t.start, t.end) }, icon('loop', 18), 'Play kept part');
+  const hint = TOUCH ? null : h('p', { class: 'ed-hint', text: 'Space plays · ← → move 1 s (with Shift 0.1 s) · [ and ] set start and end at the playhead · Enter saves' });
+
+  const root = h('div', { class: 'ed', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Trim ' + item.name },
+    h('div', { class: 'ed-top' },
+      h('button', { class: 'link', type: 'button', text: 'Cancel', onclick: () => close(false) }),
+      h('div', { class: 'ed-title' }, h('b', { text: 'Trim' }), h('span', { text: item.name })),
+      h('button', { class: 'link strong', type: 'button', text: 'Done', onclick: () => close(true) })),
+    h('div', { class: 'ed-main' },
+      ui.stage,
+      h('div', { class: 'ed-ctrl' }, clock, ui.tl, ui.ruler, ui.keep,
+        h('div', { class: 'edges' }, edge('start'), edge('end')),
+        h('div', { class: 'ed-bottom' }, ui.whole, ui.play, ui.hearSel), hint)));
+  const backdrop = h('div', { class: 'ed-backdrop', onclick: () => close(false) });
+  const ro = new ResizeObserver(() => { drawWave(); paint(); });
+
+  // ----- the media element (video or audio) -----
+  function makeMedia(src, isVideo) {
+    const m = document.createElement(isVideo ? 'video' : 'audio');
+    m.preload = 'auto'; m.playsInline = true;
+    m.setAttribute('playsinline', ''); m.setAttribute('webkit-playsinline', '');
+    if (isVideo) { m.disablePictureInPicture = true; m.disableRemotePlayback = true; }
+    m.addEventListener('error', () => useSoundOnly('This browser can’t show this video’s picture.'));
+    m.addEventListener('loadedmetadata', () => {
+      if (isVideo && !m.videoWidth) showNoPic('film', 'No picture preview on this browser. The sound plays as usual.');
+      seekMedia(playhead);
+    });
+    ['play', 'pause', 'ended'].forEach((ev) => m.addEventListener(ev, paintPlay));
+    m.src = src;
+    if (isVideo) ui.stage.prepend(m);
+    return m;
+  }
+  function showNoPic(iconName, text) {
+    ui.noPic.replaceChildren(icon(iconName, 30), h('div', { text }));
+    ui.noPic.hidden = false;
+  }
+  // If the browser can't play the file, copy its sound into a small file that it can play.
+  async function useSoundOnly(reason) {
+    if (fallback || closed) return;
+    fallback = true;
+    showNoPic('wave', 'Getting the sound ready…');
+    try {
+      const copy = await copySound(item, { start: 0, end: dur, stopped: () => closed });
+      if (closed) return;
+      const url = URL.createObjectURL(copy.blob);
+      urls.push(url);
+      media.removeAttribute('src');
+      if (media.parentNode) media.remove();
+      offset = -copy.t0;                     // the copy starts at the sound's first moment
+      media = makeMedia(url, false);
+      media.addEventListener('error', () => { canPlay = false; paintPlay(); showNoPic('warn', 'This browser can’t play this recording, but you can still trim it.'); });
+      showNoPic('film', reason + ' The sound plays as usual.');
+    } catch (err) {
+      if (closed) return;
+      canPlay = false; paintPlay();
+      showNoPic('warn', 'This browser can’t play this recording, but you can still trim it.');
+    }
+  }
+
+  // ----- playing -----
+  function isPlaying() { return !!media && !media.paused && !media.ended; }
+  function playFrom(sec, until) {
+    if (!canPlay) return;
+    setPlayhead(sec, false);
+    try { media.currentTime = sec + offset; } catch (e) { /* not ready yet */ }
+    stopAt = until;
+    const p = media.play();
+    if (p) p.catch((err) => { if (err.name !== 'AbortError') toast(`Can’t play: ${err.message}`); });
+    tick();
+  }
+  function togglePlayback() {
+    if (isPlaying()) { pause(); return; }
+    if (playhead >= dur - 0.05 || Math.abs(playhead - t.end) < 0.03) playFrom(t.start, t.end);   // at the end: play the kept part
+    else playFrom(playhead, playhead < t.end ? t.end : dur);                                     // otherwise play on, stopping at the end edge
+  }
+  function pause() { if (media) media.pause(); cancelAnimationFrame(raf); raf = 0; paintPlay(); }
+  function tick() {
+    cancelAnimationFrame(raf);
+    const step = () => {
+      if (closed) return;
+      if (!isPlaying()) { raf = 0; paintPlay(); return; }
+      const now = media.currentTime - offset;
+      if (now >= stopAt - 0.01) { media.pause(); setPlayhead(Math.min(stopAt, dur), false); raf = 0; return; }
+      setPlayhead(now, false);
+      raf = requestAnimationFrame(step);
+    };
+    raf = requestAnimationFrame(step);
+  }
+  function seekMedia(sec, fast = false) {   // at most one seek per screen frame, so dragging stays smooth
+    seekWanted = { sec, fast };
+    if (seekRaf) return;
+    seekRaf = requestAnimationFrame(() => {
+      seekRaf = 0;
+      const s = seekWanted; seekWanted = null;
+      if (!s || !media || closed) return;
+      try { if (s.fast && media.fastSeek && !isPlaying()) media.fastSeek(s.sec + offset); else media.currentTime = s.sec + offset; } catch (e) { /* not ready yet */ }
+    });
+  }
+  function setPlayhead(sec, seek, fast) {
+    playhead = clamp(sec, 0, dur);
+    if (seek) {
+      seekMedia(playhead, fast);
+      if (isPlaying()) stopAt = playhead < t.end ? t.end : dur;
+    }
+    paintHead();
+  }
+
+  // ----- editing the edges -----
+  function setEdge(which, sec) {
+    if (which === 'start') t.start = clamp(sec, 0, t.end - MIN_LENGTH);
+    else t.end = clamp(sec, t.start + MIN_LENGTH, dur);
+    paint();
+  }
+  function nudge(which, delta) {
+    setEdge(which, t[which] + delta);
+    setPlayhead(t[which], true);
+  }
+
+  // ----- fingers and mouse on the timeline -----
+  ui.tl.addEventListener('pointerdown', (e) => {
+    if (e.button > 0) return;
+    const r = ui.inner.getBoundingClientRect(), x = e.clientX - r.left;
+    const xs = (t.start / dur) * r.width, xe = (t.end / dur) * r.width;
+    const ds = Math.abs(x - xs), de = Math.abs(x - xe);
+    let which = 'seek';
+    if (Math.min(ds, de) <= GRAB) {
+      if (xe - xs < GRAB) which = x < (xs + xe) / 2 ? 'start' : 'end';   // edges close together: the side of the finger decides
+      else which = ds <= de ? 'start' : 'end';
+    }
+    drag = { which, id: e.pointerId, grab: which === 'start' ? x - xs : which === 'end' ? x - xe : 0 };
+    ui.tl.setPointerCapture(e.pointerId);
+    if (which !== 'seek') pause();
+    dragTo(e.clientX);
+    e.preventDefault();
+  });
+  ui.tl.addEventListener('pointermove', (e) => { if (drag && e.pointerId === drag.id) dragTo(e.clientX); });
+  const endDrag = (e) => {
+    if (!drag || e.pointerId !== drag.id) return;
+    const was = drag.which;
+    drag = null;
+    if (was !== 'seek') seekMedia(playhead, false);   // a precise seek once the finger lifts
+  };
+  ui.tl.addEventListener('pointerup', endDrag);
+  ui.tl.addEventListener('pointercancel', endDrag);
+  function dragTo(clientX) {
+    const r = ui.inner.getBoundingClientRect();
+    const sec = clamp((clientX - drag.grab - r.left) / r.width, 0, 1) * dur;
+    if (drag.which === 'seek') { setPlayhead(sec, true, true); return; }
+    setEdge(drag.which, sec);
+    setPlayhead(t[drag.which], true, true);   // shows the picture at that edge
+  }
+
+  // ----- keyboard (on a computer) -----
+  function onKey(e) {
+    if (e.target && e.target.closest && e.target.closest('input,select,textarea')) return;
+    const k = e.key;
+    if (k === 'Escape') close(false);
+    else if (k === 'Enter') close(true);
+    else if (k === ' ') togglePlayback();
+    else if (k === 'ArrowLeft' || k === 'ArrowRight') setPlayhead(playhead + (k === 'ArrowLeft' ? -1 : 1) * (e.shiftKey ? 0.1 : 1), true);
+    else if (k === '[' || k === 'i') setEdge('start', playhead);
+    else if (k === ']' || k === 'o') setEdge('end', playhead);
+    else return;
+    e.preventDefault(); e.stopPropagation();
+  }
+
+  // ----- drawing -----
+  function paint() {
+    const W = ui.inner.clientWidth;
+    const xs = (t.start / dur) * W, xe = (t.end / dur) * W;
+    ui.shadeL.style.width = `${xs}px`;
+    ui.shadeR.style.left = `${xe}px`;
+    ui.sel.style.left = `${xs - 20}px`;
+    ui.sel.style.width = `${xe - xs + 40}px`;
+    ui.startTime.textContent = fmtTime(t.start, 1);
+    ui.endTime.textContent = fmtTime(t.end, 1);
+    ui.keep.textContent = `Keeping ${fmtTime(t.end - t.start, 1)} of ${fmtTime(dur, 1)}`;
+    ui.whole.disabled = t.start <= 0.001 && t.end >= dur - 0.001;
+    paintHead();
+  }
+  function paintHead() {
+    ui.head.style.transform = `translateX(${(playhead / dur) * ui.inner.clientWidth}px)`;
+    ui.now.textContent = fmtTime(playhead, 1);
+  }
+  function paintPlay() {
+    if (closed) return;
+    const on = isPlaying();
+    ui.play.replaceChildren(icon(on ? 'pause' : 'play', 26, on ? '' : 'play'));
+    ui.play.setAttribute('aria-label', on ? 'Pause' : 'Play');
+    ui.play.disabled = !canPlay;
+    ui.hearSel.disabled = !canPlay;
+    ui.stagePlay.hidden = on || !canPlay;
+  }
+  function tickStep(W) {   // a gap between ruler marks that leaves room for the labels
+    for (const s of [0.5, 1, 2, 5, 10, 15, 30, 60, 120, 300, 600, 900, 1800, 3600, 7200]) if ((s / dur) * W >= 64) return s;
+    return 7200;
+  }
+  function drawWave() {
+    const c = ui.canvas, W = c.clientWidth, H = c.clientHeight;
+    if (!W || !H) return;
+    const dpr = Math.min(3, window.devicePixelRatio || 1);
+    c.width = Math.round(W * dpr); c.height = Math.round(H * dpr);
+    const g = c.getContext('2d');
+    g.setTransform(dpr, 0, 0, dpr, 0, 0);
+    g.clearRect(0, 0, W, H);
+    const css = getComputedStyle(document.documentElement);
+    // ruler marks
+    const step = tickStep(W);
+    g.fillStyle = css.getPropertyValue('--wave-grid').trim();
+    const labels = [];
+    for (let s = step; s < dur - step * 0.3; s += step) {
+      const x = Math.round((s / dur) * W);
+      g.fillRect(x, 0, 1, H);
+      labels.push(h('span', { style: `left:${x}px`, text: fmtTime(s, step < 1 ? 1 : 0) }));
+    }
+    ui.ruler.replaceChildren(h('span', { style: 'left:0;transform:none', text: '0:00' }), ...labels);
+    // the waveform
+    const mid = H / 2;
+    g.fillStyle = css.getPropertyValue('--wave').trim();
+    if (!peaks) { g.fillRect(0, mid - 0.5, W, 1); return; }
+    const n = peaks.length, cols = Math.max(1, Math.floor(W));
+    for (let x = 0; x < cols; x++) {
+      const a = Math.floor((x * n) / cols), b = Math.max(a + 1, Math.floor(((x + 1) * n) / cols));
+      let m = 0;
+      for (let i = a; i < b && i < n; i++) if (peaks[i] > m) m = peaks[i];
+      const hh = Math.max(0.5, LEVEL[m] * (mid - 3));
+      g.fillRect(x, mid - hh, 1, hh * 2);
+    }
+  }
+  function loadPeaks() {
+    if (peaks) return;
+    if (!chosenTracks(item).some((tr) => tr.decodable)) {
+      ui.waveMsg.hidden = false;
+      ui.waveMsg.textContent = 'No waveform on this browser. Trim with the times below.';
+      return;
+    }
+    ui.waveMsg.hidden = false;
+    ui.waveMsg.textContent = 'Reading the sound…';
+    getPeaks(item, (p) => { if (!closed) ui.waveMsg.textContent = `Reading the sound… ${Math.round(p * 100)}%`; }, () => closed)
+      .then((data) => { if (closed) return; peaks = data; ui.waveMsg.hidden = true; drawWave(); })
+      .catch((err) => { if (closed || err instanceof Stopped) return; ui.waveMsg.textContent = 'The waveform couldn’t be drawn. Trimming still works.'; console.error(err); });
+  }
+
+  // ----- leaving -----
+  function close(save) {
+    if (closed) return;
+    closed = true;
+    cancelAnimationFrame(raf);
+    try { media.pause(); media.removeAttribute('src'); media.load(); } catch (e) { /* already gone */ }
+    urls.forEach((u) => URL.revokeObjectURL(u));
+    ro.disconnect();
+    document.removeEventListener('keydown', onKey, true);
+    root.remove(); backdrop.remove();
+    document.body.classList.remove('locked');
+    if (save) {
+      const s = t.start < 0.005 ? 0 : round3(t.start);
+      const e = t.end > dur - 0.005 ? null : round3(t.end);
+      if (s !== item.trim.start || e !== item.trim.end) {
+        item.trim = { start: s, end: e };
+        if (item.status === 'done') { item.status = 'ready'; item.message = 'Trim changed. Extract again to make a new file.'; }
+        paintCard(item); paintBar();
+      }
+    }
+    if (lastFocus && lastFocus.focus) lastFocus.focus({ preventScroll: true });
+  }
+
+  // ----- show the editor (everything above is ready now) -----
+  document.body.append(backdrop, root);
+  document.body.classList.add('locked');
+  document.addEventListener('keydown', onKey, true);
+  media = makeMedia(URL.createObjectURL(item.file), item.hasVideo);
+  urls.push(media.src);
+  if (!item.hasVideo) showNoPic('wave', 'Sound recording');
+  ro.observe(ui.inner);
+  paint(); paintPlay();
+  loadPeaks();
+}
+// How tall the waveform is drawn for each loudness (0–255): a decibel scale, so quiet speech still shows.
+const LEVEL = new Float32Array(256);
+for (let i = 1; i < 256; i++) LEVEL[i] = Math.max(0, (20 * Math.log10(i / 255) + 48) / 48);
+
+// A button that repeats while you hold it (for − and +).
+function repeatButton(btn, fn) {
+  let timer = 0, every = 0;
+  const stop = () => { clearTimeout(timer); clearInterval(every); timer = every = 0; };
+  btn.addEventListener('pointerdown', (e) => {
+    if (e.button > 0) return;
+    fn();
+    timer = setTimeout(() => { every = setInterval(fn, 90); }, 420);
+  });
+  ['pointerup', 'pointerleave', 'pointercancel'].forEach((ev) => btn.addEventListener(ev, stop));
+  btn.addEventListener('click', (e) => { if (e.detail === 0) fn(); });   // Enter or Space on a keyboard
+}
+
+/* ---------- 14. Help and offline status ---------- */
+let offlineState = 'none';
+const STATUS_LABEL = { ready: 'Offline ready', saving: 'Saving offline…', none: 'Online only' };
+async function refreshOffline() {
+  if (!('serviceWorker' in navigator) || !window.isSecureContext || !window.caches) offlineState = 'none';
+  else {
+    try {
+      const need = ['index.html', 'mediabunny.min.mjs', 'mediabunny-mp3-encoder.min.mjs'];
+      const hits = await Promise.all(need.map((p) => caches.match(new URL(p, location.href).href)));
+      offlineState = hits.every(Boolean) ? 'ready' : 'saving';
+    } catch (e) { offlineState = 'saving'; }
+  }
+  el.statusBtn.dataset.state = offlineState;
+  el.statusText.textContent = STATUS_LABEL[offlineState];
+  el.statusBtn.setAttribute('aria-label', `${STATUS_LABEL[offlineState]}. Tap for help.`);
+}
+function openHelp() {
+  const statusText = {
+    ready: 'Echo Peel is saved on this device and works with no internet.',
+    saving: 'Keep it open for a moment while online so it can save itself.',
+    none: 'This browser can’t save Echo Peel for offline use.',
+  }[offlineState];
+  const p = (html) => { const n = h('p'); n.innerHTML = html; return n; };
+  const body = h('div', { class: 'help' },
+    h('h4', { text: 'Add recordings' }),
+    IOS ? p('Fastest: in Photos, open the recording and tap Share › <b>Save to Files</b>. Then tap <b>+</b> here and pick it from Files. Choosing from the <b>Photo Library</b> works too, but the iPhone converts the video first, which takes a while for long ones.')
+      : p('Click <b>+</b> or drop video files anywhere on the page.'),
+    h('h4', { text: 'Trim' }),
+    p('Cut off the start and end, like the moment you open Control Center. Drag the edges of the frame, use − and +, or play to a moment and tap <b>Set at playhead</b>.'),
+    h('h4', { text: 'Choose the sound' }),
+    p('<b>Speech</b> makes small mono MP3s for voices. <b>Music</b> keeps stereo at a higher quality. <b>Original</b> copies the video’s own sound exactly as it is, usually as an .m4a file.'),
+    h('h4', { text: 'Save' }),
+    p(SHARE ? 'Tap the share button on a finished file, then <b>Save to Files</b>. Files stay in Echo Peel until you clear them.'
+      : 'Click the download button on a finished file. With several files, <b>Download all</b> lets you pick a folder.'),
+    h('h4', { text: 'Private' }),
+    p('Everything happens on this device. Nothing is uploaded.'),
+    h('div', { class: 'help-status', 'data-state': offlineState }, h('span', { class: 'dot' }), h('span', { text: statusText })),
+    h('h4', { text: 'About' }),
+    p(`Echo Peel ${VERSION}. Made with <a href="https://mediabunny.dev" target="_blank" rel="noopener">Mediabunny</a> (MPL 2.0) and the <a href="https://lame.sourceforge.io" target="_blank" rel="noopener">LAME MP3 encoder</a> (LGPL).`));
+  openSheet({ title: 'How Echo Peel works', body });
+}
+
+function showBanner(tone, text) {
+  el.banners.append(h('div', { class: 'banner' + (tone === 'warn' ? ' warn' : '') }, icon(tone === 'warn' ? 'warn' : 'info', 20), h('p', { text })));
+}
+
+/* ---------- 15. Starting up ---------- */
+function bindStatic() {
+  el.addBtn.append(icon('plus', 22));
+  el.helpBtn.append(icon('help', 20));
+  el.emptyArt.append(icon('peel', 34));
+  el.emptyAddBtn.append(icon('plus', 20), 'Choose recordings');
+  el.addMoreBtn.append(icon('plus', 18), 'Add more recordings');
+  el.tip.append(icon('info', 18), h('div', null, IOS
+    ? h('p', null, h('b', { text: 'Fastest: ' }), 'in Photos, open the recording and tap Share › Save to Files. Then tap + here and pick it from Files. Choosing from the ', h('b', { text: 'Photo Library' }), ' works too, but the iPhone converts the video first.')
+    : h('p', null, h('b', { text: 'Tip: ' }), 'drop videos anywhere on this page. iPhone screen recordings, MOV, MP4, WebM and sound files all work.')));
+  const pick = () => el.picker.click();
+  el.addBtn.addEventListener('click', pick);
+  el.emptyAddBtn.addEventListener('click', pick);
+  el.addMoreBtn.addEventListener('click', pick);
+  el.picker.addEventListener('change', () => { addFiles(el.picker.files); el.picker.value = ''; });
+  el.kindSeg.addEventListener('click', (e) => { const b = e.target.closest('button[data-kind]'); if (b) setKind(b.dataset.kind); });
+  el.kindSeg.addEventListener('keydown', (e) => {   // arrow keys move between the three choices
+    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+    const keys = Object.keys(OUTPUTS).filter((k) => k === 'original' || CAN_DECODE);
+    const i = keys.indexOf(S.kind) + (e.key === 'ArrowRight' ? 1 : -1);
+    if (keys[i]) { setKind(keys[i]); el.kindSeg.querySelector(`[data-kind="${keys[i]}"]`).focus(); }
+    e.preventDefault();
+  });
+  el.barBtn.addEventListener('click', () => { if (S.running) { S.stop = true; paintBar(); } else startRun(); });
+  el.clearDoneBtn.addEventListener('click', clearFinished);
+  el.saveAllBtn.addEventListener('click', () => saveFiles(S.results));
+  el.clearAllBtn.addEventListener('click', confirmClearAll);
+  el.helpBtn.addEventListener('click', openHelp);
+  el.statusBtn.addEventListener('click', openHelp);
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && sheetOpen) closeSheet(); });
+  // Drag and drop files onto the page (computers).
+  let depth = 0;
+  const hasFiles = (e) => e.dataTransfer && [...(e.dataTransfer.types || [])].includes('Files');
+  window.addEventListener('dragenter', (e) => { if (!hasFiles(e)) return; depth++; el.drop.hidden = false; e.preventDefault(); });
+  window.addEventListener('dragover', (e) => { if (hasFiles(e)) e.preventDefault(); });
+  window.addEventListener('dragleave', (e) => { if (!hasFiles(e)) return; depth = Math.max(0, depth - 1); if (!depth) el.drop.hidden = true; });
+  window.addEventListener('drop', (e) => { if (!hasFiles(e)) return; e.preventDefault(); depth = 0; el.drop.hidden = true; addFiles(e.dataTransfer.files); });
+}
+
+async function start() {
+  bindStatic();
+  el.foot.textContent = `Echo Peel ${VERSION} · works offline · nothing leaves this device`;
+  // Browsers can't make MP3s on their own, so the LAME encoder is plugged in (unless the browser can after all).
+  let nativeMp3 = false;
+  try { nativeMp3 = await MB.canEncodeAudio('mp3'); } catch (e) { nativeMp3 = false; }
+  if (!nativeMp3) registerMp3Encoder();
+  if (!CAN_DECODE) {
+    if (S.kind !== 'original') S.kind = 'original';
+    showBanner('warn', 'Making MP3s needs iOS 26 or later, or a recent Chrome or Edge. Here, Echo Peel can still save the Original sound.');
+  }
+  paintKind();
+  try {
+    await db.open();
+    S.results = (await db.all()).sort((a, b) => b.created - a.created);
+  } catch (e) {
+    showBanner('warn', 'This browser won’t keep your audio files after Echo Peel closes. Save each one as soon as it’s ready.');
+  }
+  paintResults(); paintSections(); paintBar();
+  if ('serviceWorker' in navigator && window.isSecureContext) {
+    navigator.serviceWorker.register('sw.js').then(() => navigator.serviceWorker.ready).then(refreshOffline).catch(refreshOffline);
+    navigator.serviceWorker.addEventListener('controllerchange', refreshOffline);
+    setTimeout(refreshOffline, 3000);
+  }
+  refreshOffline();
+  if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});   // asks the browser not to clear the files
+}
+
+start().catch((err) => {
+  console.error(err);
+  document.getElementById('oldText').textContent = `Something stopped it: ${err && err.message}`;
+  document.getElementById('old').hidden = false;
+});
+window.EchoPeel = { S, addFiles };   // for testing from the browser's console
+</script>
+</body>
+</html>
