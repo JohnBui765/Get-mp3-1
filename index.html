@@ -103,7 +103,7 @@ svg{display:block;flex:none}
 .block-title{margin:0;font-size:20px;font-weight:750;letter-spacing:-.015em}
 .block-title .count{margin-left:6px;color:var(--text3);font-weight:650}
 .head-actions{margin-left:auto;display:flex;gap:2px}
-.link{height:34px;padding:0 10px;border-radius:17px;color:var(--accent);font-weight:600;font-size:15px;white-space:nowrap}
+.link{height:44px;margin:-5px 0;padding:0 10px;border-radius:22px;color:var(--accent);font-weight:600;font-size:15px;white-space:nowrap}
 .link:active{background:var(--tint)}
 .link.strong{font-weight:700}
 .note{margin:8px 4px 0;font-size:13px;line-height:1.4;color:var(--text2)}
@@ -118,6 +118,18 @@ svg{display:block;flex:none}
 .seg button{height:40px;border-radius:10px;font-weight:650;font-size:15px;color:var(--text)}
 .seg button[aria-checked="true"]{background:var(--panel);color:var(--accent);box-shadow:0 1px 3px rgba(0,0,0,.14),0 0 0 .5px rgba(0,0,0,.04)}
 .seg button:disabled{opacity:.4}
+/* Even out volume: a switch, drawn the way iPhone settings draw them */
+.opt{display:flex;align-items:center;gap:12px;margin-top:12px;min-height:58px;padding:9px 12px 9px 14px;border-radius:14px;background:var(--panel);cursor:pointer}
+.opt.off{cursor:default}
+.opt-text{flex:1;min-width:0}
+.opt-text b{display:block;font-size:15.5px;font-weight:650}
+.opt-text span{display:block;margin-top:1px;font-size:13px;line-height:1.35;color:var(--text2)}
+.opt.off .opt-text b{color:var(--text2)}
+.switch{-webkit-appearance:none;appearance:none;flex:none;position:relative;width:51px;height:31px;margin:0;border-radius:16px;background:var(--fill-strong);cursor:pointer;transition:background-color .2s}
+.switch::before{content:"";position:absolute;top:2px;left:2px;width:27px;height:27px;border-radius:50%;background:#fff;box-shadow:0 3px 8px rgba(0,0,0,.15),0 1px 1px rgba(0,0,0,.16);transition:transform .2s}
+.switch:checked{background:var(--accent-bg)}
+.switch:checked::before{transform:translateX(20px)}
+.switch:disabled{opacity:.45;cursor:default}
 
 /* the empty state */
 .empty{background:var(--panel);border-radius:18px;padding:24px 18px 18px;text-align:center}
@@ -246,30 +258,36 @@ svg{display:block;flex:none}
 /* ---------- the trim editor ---------- */
 .ed-backdrop{position:fixed;inset:0;z-index:49;background:rgba(0,0,0,.45);animation:fade .2s ease-out}
 .ed{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;background:var(--sheet-bg);
-  padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);animation:rise .3s cubic-bezier(.2,.9,.25,1)}
-.ed-top{flex:none;display:flex;align-items:center;gap:6px;height:52px;padding:0 6px}
-.ed-top .link{font-size:17px;min-width:76px}
+  padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);animation:rise .3s cubic-bezier(.2,.9,.25,1);
+  touch-action:manipulation;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.ed:focus-visible{outline:none}
+.ed-top{flex:none;display:flex;align-items:center;gap:6px;height:48px;padding:0 6px}
+.ed-top .link{height:44px;font-size:17px;min-width:76px}
 .ed-top .link:last-child{text-align:right}
 .ed-title{flex:1;min-width:0;text-align:center}
 .ed-title b{display:block;font-size:17px;font-weight:700}
 .ed-title span{display:block;font-size:12.5px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ed-main{flex:1;min-height:0;display:flex;flex-direction:column}
-.ed-stage{position:relative;flex:1;min-height:120px;margin:0 12px;border-radius:14px;overflow:hidden;background:var(--stage);display:grid;place-items:center;cursor:pointer}
+.ed-stage{position:relative;flex:1;min-height:110px;margin:0 12px;border-radius:14px;overflow:hidden;background:var(--stage);display:grid;place-items:center;cursor:pointer}
 .ed-stage video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;display:block}
 .no-pic{position:relative;max-width:330px;padding:16px;text-align:center;color:#C7C7CC;font-size:14px;line-height:1.4}
 .no-pic .ico{margin:0 auto 8px;color:#8E8E93}
 .stage-play{position:absolute;left:50%;top:50%;width:62px;height:62px;margin:-31px 0 0 -31px;border-radius:50%;display:grid;place-items:center;color:#fff;
   background:rgba(0,0,0,.45);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);pointer-events:none}
 .stage-play .ico{margin-left:3px}
-.ed-ctrl{flex:none;padding-bottom:6px}
-.ed-clock{display:flex;justify-content:center;align-items:baseline;gap:6px;margin:10px 0 8px;font-size:22px;font-weight:700;font-variant-numeric:tabular-nums}
-.ed-clock span{font-size:14px;font-weight:600;color:var(--text2)}
-.tl{position:relative;height:72px;margin:0 12px;padding:0 20px;touch-action:none;-webkit-user-select:none;user-select:none;cursor:pointer}
+.ed-ctrl{flex:none}
+.ed-clock{display:flex;justify-content:center;align-items:baseline;gap:6px;margin:10px 16px 8px;font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.ed-clock span{min-width:0;overflow:hidden;text-overflow:ellipsis;font-size:14px;font-weight:600;color:var(--text2)}
+.ed-clock.hint span{color:var(--accent)}
+/* The timeline reaches the sides of the screen, so a finger can grab a handle even at the very start or end. */
+.tl{position:relative;height:72px;padding:0 32px;touch-action:none;cursor:pointer}
+.tl.grab{cursor:ew-resize}
 .tl-in{position:relative;height:100%}
 .tl canvas{position:absolute;left:0;top:0;width:100%;height:100%;border-radius:3px;background:var(--wave-bg)}
 .shade{position:absolute;top:0;bottom:0;background:var(--trim-shade);pointer-events:none}
 .shade.l{left:0}
 .shade.r{right:0}
+/* The frame around the kept part. Its 20 px sides are the handles (HANDLE in the code). */
 .sel{position:absolute;top:-4px;bottom:-4px;border:solid var(--trim);border-width:4px 20px;border-radius:10px;pointer-events:none}
 .sel::before,.sel::after{content:"";position:absolute;top:50%;width:8px;height:8px;margin-top:-5px;border:solid #fff;border-width:0 0 2.5px 2.5px}
 .sel::before{left:-13px;transform:rotate(45deg)}
@@ -279,15 +297,19 @@ svg{display:block;flex:none}
 .tl-ruler{position:relative;height:16px;margin:10px 32px 0;font-size:11px;font-weight:600;color:var(--text3);font-variant-numeric:tabular-nums}
 .tl-ruler span{position:absolute;top:0;transform:translateX(-50%);white-space:nowrap}
 .ed-keep{margin:4px 0 0;text-align:center;font-size:13px;color:var(--text2);font-variant-numeric:tabular-nums}
-.edges{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 12px 0}
-.edge{background:var(--sheet-card);border-radius:14px;padding:8px 8px 10px;text-align:center}
-.edge-label{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text2)}
-.edge-row{display:flex;align-items:center;gap:4px;margin-top:4px}
-.nudge{flex:none;width:40px;height:40px;border-radius:12px;background:var(--fill);display:grid;place-items:center}
-.nudge:active{background:var(--fill-strong)}
-.edge-time{flex:1;min-width:0;height:40px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;gap:5px;font-size:18px;font-weight:700;color:var(--accent);font-variant-numeric:tabular-nums}
+.edges{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;margin:10px 12px 0}
+/* Each edge: its time (tap to hear it) beside − and +, then "Set at playhead". When there isn't room, − and + move under the time. */
+.edge{display:flex;flex-wrap:wrap;gap:4px;padding:6px;border-radius:14px;background:var(--sheet-card)}
+.edge-time{flex:1 0 auto;height:44px;padding:0 4px;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.15;color:var(--accent)}
 .edge-time:active{background:var(--tint)}
-.edge-set{margin-top:6px;width:100%;height:34px;border-radius:10px;background:var(--tint);color:var(--accent);font-weight:650;font-size:14px}
+.edge-label{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text2)}
+.edge-val{display:flex;align-items:center;gap:4px;font-size:18px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.steps{flex:1 0 auto;max-width:120px;margin:0 auto;display:flex;gap:4px}
+.nudge{flex:1;min-width:44px;height:44px;border-radius:12px;background:var(--fill);display:grid;place-items:center}
+.nudge:active{background:var(--fill-strong)}
+.edge-set{flex:1 0 100%;height:44px;border-radius:10px;background:var(--tint);color:var(--accent);font-weight:650;font-size:14px}
+.edge-set:active{background:var(--fill-strong)}
+.ed-foot{flex:none;padding-bottom:6px;container-type:inline-size}
 .ed-bottom{display:flex;align-items:center;gap:10px;margin:12px 12px 4px}
 .ed-bottom .side{flex:1;min-width:0;height:44px;border-radius:12px;background:var(--fill);font-weight:650;font-size:14.5px;display:flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap}
 .ed-bottom .side:active:not(:disabled){background:var(--fill-strong)}
@@ -295,10 +317,26 @@ svg{display:block;flex:none}
 .round:active{transform:scale(.94)}
 .round .ico.play{margin-left:3px}
 .ed-hint{margin:8px 12px 0;text-align:center;font-size:12.5px;color:var(--text3)}
+@container (max-width:350px){
+  .ed-bottom .side .ico{display:none}   /* no room for the icons beside the words */
+}
+/* Short screens (small iPhones, and phones on their side): tighter spacing. */
+@media (max-height:600px){
+  .ed-top{height:44px}
+  .ed-clock{margin:6px 16px 4px;font-size:20px}
+  .tl{height:60px}
+  .tl-ruler{margin-top:7px}
+  .edges{margin-top:6px}
+  .ed-bottom{margin:8px 12px 2px}
+  .round{width:50px;height:50px}
+}
+/* Phones on their side: picture and play buttons on the left, timeline and edges on the right. */
 @media (orientation:landscape) and (max-height:520px){
-  .ed-main{flex-direction:row}
-  .ed-stage{flex:1 1 44%;margin:0 0 8px 12px}
-  .ed-ctrl{flex:1 1 56%;overflow:auto;padding-bottom:8px}
+  .ed-main{display:grid;grid-template-columns:minmax(0,45fr) minmax(0,55fr);grid-template-rows:minmax(0,1fr) auto}
+  .ed-stage{grid-area:1/1/2/2;min-height:0;margin:0 0 0 12px}
+  .ed-foot{grid-area:2/1/3/2;padding-bottom:4px}
+  .ed-bottom{margin:8px 0 0 12px}
+  .ed-ctrl{grid-area:1/2/3/3;min-height:0;overflow:auto;overscroll-behavior:contain}
   .ed-clock{margin-top:0}
 }
 @media (min-width:900px) and (min-height:720px){
@@ -332,6 +370,10 @@ svg{display:block;flex:none}
       <button type="button" role="radio" data-kind="original">Original</button>
     </div>
     <p class="note" id="kindNote"></p>
+    <label class="opt" id="evenRow" for="evenBox">
+      <span class="opt-text"><b id="evenTitle">Even out volume</b><span id="evenSub"></span></span>
+      <input class="switch" type="checkbox" role="switch" id="evenBox" aria-labelledby="evenTitle" aria-describedby="evenSub">
+    </label>
   </section>
 
   <section class="block" aria-labelledby="recTitle">
@@ -415,7 +457,7 @@ import { registerMp3Encoder } from './mediabunny-mp3-encoder.min.mjs';
 window.__echoPeelStarted = true;   // tells the safety net above that the app loaded
 
 /* ---------- 1. Settings ---------- */
-const VERSION = '1.0';
+const VERSION = '1.1';
 const OUTPUTS = {
   speech: { label: 'Speech', name: 'Speech MP3', note: 'MP3, mono, 96 kbps: about 0.7 MB a minute. Clear voices in small files.' },
   music: { label: 'Music', name: 'Music MP3', note: 'MP3, stereo, 192 kbps: about 1.4 MB a minute. Keeps left and right.' },
@@ -428,6 +470,13 @@ const EDGE_LISTEN = 2.5;         // seconds played when you tap a start or end t
 const BLOCK = 16384;             // frames handled per step while making an MP3 (about a third of a second)
 const PRE_ROLL = 3;              // extra compressed packets kept before a trimmed start when copying (see copySound)
 const SILENT_PEAK = 0.001;       // a file whose loudest moment is below this (−60 dB) counts as silent
+// Even out volume. Loudness is measured in LUFS: the scale broadcasters use for how loud people hear a sound.
+const LEVEL_TARGET = -16;        // LUFS: every MP3 comes out this loud (the level podcasts and phones use)
+const LEVEL_CEILING = -1.5;      // dB below full scale: no moment may be louder, so the MP3 never distorts
+const LEVEL_MAX_BOOST = 20;      // dB: the most a quiet recording is turned up, so near-silence doesn't become loud hiss
+const LOOKAHEAD = 0.005;         // seconds: the limiter sees a loud moment coming this early and dips smoothly before it
+const RELEASE = 0.08;            // seconds: how quickly the volume comes back after such a dip
+const MEASURE_SHARE = 0.45;      // the part of the progress bar used for measuring (it decodes the sound once more, so almost half)
 const MP3_RATES = [48000, 44100, 32000, 24000, 22050, 16000, 12000, 11025, 8000];  // the only rates MP3 allows
 const IOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 const TOUCH = IOS || matchMedia('(hover: none) and (pointer: coarse)').matches;
@@ -439,6 +488,7 @@ const CAN_DECODE = typeof AudioDecoder !== 'undefined';
 /* ---------- 2. What the app knows right now ---------- */
 const S = {
   kind: loadPref('kind', 'speech'),  // speech | music | original
+  even: loadPref('even', 'on') !== 'off',   // even out the volume of MP3s (on unless you turned it off)
   items: [],      // recordings you added (they live only while the app is open)
   results: [],    // finished audio files (kept in the database)
   running: false, // true while extracting
@@ -453,7 +503,7 @@ if (!OUTPUTS[S.kind]) S.kind = 'speech';
 const $ = (id) => document.getElementById(id);
 const el = {
   statusBtn: $('statusBtn'), statusText: $('statusText'), helpBtn: $('helpBtn'), addBtn: $('addBtn'),
-  banners: $('banners'), kindSeg: $('kindSeg'), kindNote: $('kindNote'),
+  banners: $('banners'), kindSeg: $('kindSeg'), kindNote: $('kindNote'), evenRow: $('evenRow'), evenBox: $('evenBox'), evenSub: $('evenSub'),
   clearDoneBtn: $('clearDoneBtn'), empty: $('empty'), emptyArt: $('emptyArt'), emptyAddBtn: $('emptyAddBtn'), tip: $('tip'),
   cards: $('cards'), addMoreBtn: $('addMoreBtn'),
   resBlock: $('resBlock'), resCount: $('resCount'), results: $('results'), saveAllBtn: $('saveAllBtn'), clearAllBtn: $('clearAllBtn'),
@@ -616,7 +666,7 @@ const db = {
 };
 // Only these fields go into the database (never screen elements).
 const forDb = (r) => ({ id: r.id, name: r.name, ext: r.ext, mime: r.mime, kind: r.kind, size: r.size, duration: r.duration,
-  created: r.created, source: r.source, silent: r.silent, blob: r.blob });
+  created: r.created, source: r.source, silent: r.silent, gain: r.gain, lufs: r.lufs, blob: r.blob });
 
 /* ---------- 5. Opening a recording ---------- */
 function addFiles(list) {
@@ -899,23 +949,13 @@ function mixInto(block, outCh, frames, planes) {
     }
   }
 }
-// Keeps every value between −1 and 1 (two loud tracks added together could go over) and returns the loudest.
-function limit(block) {
-  let peak = 0;
-  for (let i = 0; i < block.length; i++) {
-    let v = block[i];
-    if (v > 1) v = block[i] = 1; else if (v < -1) v = block[i] = -1;
-    const a = v < 0 ? -v : v;
-    if (a > peak) peak = a;
-  }
-  return peak;
-}
-
-// Speech or Music: decode → trim → mix → encode as MP3.
-async function encodeMp3(item, kind, { start, end, onProgress, stopped }) {
+// Hands out the chosen tracks' sound between start and end, mixed into the output's channels, one block at a time
+// (laid out channel after channel). With Even out volume it's opened twice: once to measure, once to make the MP3.
+async function openMix(item, kind, start, end) {
   const tracks = chosenTracks(item).filter((t) => t.decodable);
   if (!tracks.length) throw new UserError(blockedReason(item, kind) || 'This browser can’t decode this sound.');
   const readers = tracks.map((t) => new TrackReader(t.track, start, end));
+  const stop = () => { for (const r of readers) r.stop(); };
   try {
     for (const r of readers) await r.open();
     const live = readers.filter((r) => r.rate > 0);
@@ -923,7 +963,204 @@ async function encodeMp3(item, kind, { start, end, onProgress, stopped }) {
     const rate = live[0].rate;                         // the first track sets the rate; others are converted to it
     for (const r of live.slice(1)) if (r.rate !== rate) r.convertTo(rate);
     const outCh = kind === 'speech' ? 1 : Math.min(2, Math.max(...live.map((r) => r.channels)));
+    const total = Math.max(1, Math.round((end - start) * rate));
+    let given = 0;
+    // The next block (up to BLOCK frames), or null at the end.
+    const read = async () => {
+      if (given >= total) return null;
+      const parts = await Promise.all(live.map((r) => r.read(Math.min(BLOCK, total - given))));
+      const frames = Math.max(...parts.map((p) => (p[0] ? p[0].length : 0)));
+      if (!frames) return null;                        // every track has ended
+      const block = new Float32Array(frames * outCh);
+      for (const planes of parts) if (planes[0] && planes[0].length) mixInto(block, outCh, frames, planes);
+      given += frames;
+      return { block, frames, done: given / total };
+    };
+    return { rate, outCh, read, stop };
+  } catch (err) {
+    stop();
+    throw err;
+  }
+}
+
+// The ear-like filter of the loudness standard (BS.1770 "K-weighting"): a lift of the treble, then a cut below
+// about 40 Hz. Its numbers are worked out for any sample rate (the standard lists them for 48 kHz only).
+// Returns a function that filters part of an array and gives back the energy of what came out.
+function earFilter(rate) {
+  let K = Math.tan(Math.PI * 1681.974450955533 / rate), Q = 0.7071752369554196;
+  const Vh = 10 ** (3.999843853973347 / 20), Vb = Vh ** 0.4996667741545416;
+  let a0 = 1 + K / Q + K * K;
+  const b0 = (Vh + Vb * K / Q + K * K) / a0, b1 = 2 * (K * K - Vh) / a0, b2 = (Vh - Vb * K / Q + K * K) / a0;
+  const a1 = 2 * (K * K - 1) / a0, a2 = (1 - K / Q + K * K) / a0;
+  K = Math.tan(Math.PI * 38.13547087602444 / rate); Q = 0.5003270373238773;
+  a0 = 1 + K / Q + K * K;
+  const c1 = 2 * (K * K - 1) / a0, c2 = (1 - K / Q + K * K) / a0;
+  const mem = new Float64Array(6);   // the last two values in and out of each stage
+  return (data, from, count) => {
+    let energy = 0, [x1, x2, y1, y2, z1, z2] = mem;
+    for (let i = from, e = from + count; i < e; i++) {
+      const x = data[i];
+      const y = b0 * x + b1 * x1 + b2 * x2 - a1 * y1 - a2 * y2;
+      const z = y - 2 * y1 + y2 - c1 * z1 - c2 * z2;
+      x2 = x1; x1 = x; y2 = y1; y1 = y; z2 = z1; z1 = z;
+      energy += z * z;
+    }
+    mem.set([x1, x2, y1, y2, z1, z2]);
+    return energy;
+  };
+}
+
+// Measures loudness the way broadcasters do (in LUFS). The sound goes through the ear-like filter, then it's
+// judged in 0.4-second windows, leaving out near-silence and the pauses between sentences, so a talk with long
+// pauses isn't taken for a quiet one.
+class LoudnessMeter {
+  constructor(rate, channels) {
+    this.filters = Array.from({ length: channels }, () => earFilter(rate));
+    this.weight = channels === 1 ? 2 : 1;   // a mono file plays on both earphones, so it counts as two channels
+    this.step = Math.round(rate / 10);      // the energy is added up in tenths of a second
+    this.n = 0; this.sum = 0;               // frames and energy so far in the current tenth
+    this.tenths = [];
+    this.peak = 0;                          // the loudest single moment, as it is now
+  }
+  add(block, frames) {
+    for (let i = 0; i < block.length; i++) { const a = block[i] < 0 ? -block[i] : block[i]; if (a > this.peak) this.peak = a; }
+    for (let i = 0; i < frames;) {
+      const take = Math.min(frames - i, this.step - this.n);
+      this.filters.forEach((f, c) => { this.sum += f(block, c * frames + i, take); });
+      this.n += take; i += take;
+      if (this.n === this.step) { this.tenths.push(this.sum * this.weight / this.step); this.n = 0; this.sum = 0; }
+    }
+  }
+  // The loudness in LUFS, or −Infinity when nothing is loud enough to measure.
+  lufs() {
+    const p = this.tenths, windows = [];
+    for (let i = 3; i < p.length; i++) windows.push((p[i - 3] + p[i - 2] + p[i - 1] + p[i]) / 4);   // 0.4 s, every 0.1 s
+    if (!windows.length && p.length) windows.push(p.reduce((s, z) => s + z, 0) / p.length);       // shorter than that
+    const toLufs = (z) => -0.691 + 10 * Math.log10(z);
+    const mean = (list) => list.reduce((s, z) => s + z, 0) / list.length;
+    const heard = windows.filter((z) => toLufs(z) > -70);                     // leave out near-silence
+    if (!heard.length) return -Infinity;
+    const pauses = toLufs(mean(heard)) - 10;                                   // and pauses: 10 below the average
+    return toLufs(mean(heard.filter((z) => toLufs(z) > pauses)));
+  }
+}
+
+// Turns the sound up or down by a fixed amount and keeps every moment under the ceiling. When a moment would go
+// over, the volume dips smoothly just before it (it looks LOOKAHEAD ahead) and comes back over about RELEASE,
+// too briefly to hear as a change in volume. Everything else passes through untouched. Looking ahead means the
+// sound comes out a few milliseconds late: finish() hands out the end. Nothing is added or lost.
+class Leveler {
+  constructor(rate, channels, gainDb, ceilingDb) {
+    const L = this.L = Math.max(1, Math.round(rate * LOOKAHEAD));
+    this.ch = channels;
+    this.gain = 10 ** (gainDb / 20);
+    this.ceiling = 10 ** (ceilingDb / 20);
+    this.back = 1 - Math.exp(-1 / (rate * RELEASE));
+    this.wait = new Float32Array(L * channels);   // the last L frames, waiting to go out
+    this.vols = new Float64Array(L).fill(1);      // the last L volumes, averaged into a smooth curve
+    this.sum = L;
+    let size = 1; while (size < L) size *= 2;     // the quietest volume the next L frames allow, kept in a queue
+    this.qVol = new Float64Array(size); this.qAt = new Float64Array(size); this.mask = size - 1;
+    this.qHead = 0; this.qLen = 0;
+    this.vol = 1;                                 // the volume before smoothing
+    this.n = 0;                                   // frames taken in so far
+    this.peak = 0;                                // the loudest moment that went out
+    // With the volume left as it is, nothing needs to look ahead: only values over full scale (two loud tracks
+    // added together) are cut back, and the sound goes straight through.
+    this.plain = gainDb === 0 && ceilingDb >= 0;
+  }
+  process(block, frames) {
+    if (this.plain) {
+      let peak = this.peak;
+      for (let i = 0; i < block.length; i++) {
+        let v = block[i];
+        if (v > 1) v = block[i] = 1; else if (v < -1) v = block[i] = -1;
+        const a = v < 0 ? -v : v;
+        if (a > peak) peak = a;
+      }
+      this.peak = peak;
+      return { block, frames };
+    }
+    const L = this.L, ch = this.ch, gain = this.gain, ceiling = this.ceiling, back = this.back, wait = this.wait, vols = this.vols,
+      qVol = this.qVol, qAt = this.qAt, mask = this.mask, perFrame = 1 / L;
+    let n = this.n, qHead = this.qHead, qLen = this.qLen, vol = this.vol, sum = this.sum, peak = this.peak;
+    const outFrames = Math.max(0, Math.min(frames, n + frames - (L - 1)));
+    const out = new Float32Array(outFrames * ch);
+    let o = 0, slot = n % L;
+    for (let i = 0; i < frames; i++, n++) {
+      let loud = 0;
+      for (let c = 0; c < ch; c++) {
+        const v = block[c * frames + i] * gain;
+        wait[slot * ch + c] = v;
+        const a = Math.abs(v);
+        if (a > loud) loud = a;
+      }
+      // The quietest volume the last L frames allow. The queue keeps only volumes below 1, quietest in front.
+      if (qLen !== 0 && qAt[qHead] <= n - L) { qHead = (qHead + 1) & mask; qLen--; }
+      if (loud > ceiling) {
+        const allow = ceiling / loud;
+        while (qLen !== 0 && qVol[(qHead + qLen - 1) & mask] >= allow) qLen--;
+        const k = (qHead + qLen) & mask;
+        qVol[k] = allow; qAt[k] = n; qLen++;
+      }
+      const least = qLen !== 0 ? qVol[qHead] : 1;
+      if (least < vol) vol = least;
+      else if (vol !== least) { vol += (least - vol) * back; if (least - vol < 1e-6) vol = least; }
+      sum += vol - vols[slot]; vols[slot] = vol;
+      slot = slot + 1 === L ? 0 : slot + 1;
+      if (n < L - 1) continue;
+      // The frame taken in L − 1 frames ago goes out, at the average of the volumes since.
+      const g = sum * perFrame, from = slot * ch;
+      for (let c = 0; c < ch; c++) {
+        let v = wait[from + c] * g;
+        if (v > ceiling) v = ceiling; else if (v < -ceiling) v = -ceiling;   // only rounding could reach this
+        out[c * outFrames + o] = v;
+        const a = Math.abs(v);
+        if (a > peak) peak = a;
+      }
+      o++;
+    }
+    this.n = n; this.qHead = qHead; this.qLen = qLen; this.vol = vol; this.sum = sum; this.peak = peak;
+    return { block: out, frames: outFrames };
+  }
+  finish() { return this.plain ? { block: null, frames: 0 } : this.process(new Float32Array((this.L - 1) * this.ch), this.L - 1); }
+}
+
+// How loud the part you kept is, measured exactly as it will be encoded (mixed, and mono for Speech).
+// Remembered, so extracting the same part again doesn't measure it twice.
+async function measureLevel(item, kind, start, end, onProgress, stopped) {
+  const key = `${peaksKey(item)}|${kind}|${start}|${end}`;
+  if (item.level && item.level.key === key) return item.level;
+  const mix = await openMix(item, kind, start, end);
+  try {
+    const meter = new LoudnessMeter(mix.rate, mix.outCh);
+    while (true) {
+      if (stopped()) throw new Stopped();
+      const piece = await mix.read();
+      if (!piece) break;
+      meter.add(piece.block, piece.frames);
+      onProgress(piece.done);
+    }
+    item.level = { key, lufs: meter.lufs(), peak: meter.peak };
+    return item.level;
+  } finally {
+    mix.stop();
+  }
+}
+
+// Speech or Music: decode → trim → mix → even out the volume → encode as MP3.
+async function encodeMp3(item, kind, { start, end, even, onProgress, stopped }) {
+  // With Even out volume, the part you kept is measured first, to know how much to turn it up or down.
+  // Silent recordings, and ones too quiet to measure, are left as they are.
+  const level = even ? await measureLevel(item, kind, start, end, (p) => onProgress(p * MEASURE_SHARE, 'measure'), stopped) : null;
+  const gain = level && Number.isFinite(level.lufs) && level.peak >= SILENT_PEAK ? Math.min(LEVEL_MAX_BOOST, LEVEL_TARGET - level.lufs) : null;
+  const done = level ? MEASURE_SHARE : 0;   // the part of the progress bar already used
+  const mix = await openMix(item, kind, start, end);
+  try {
+    const { rate, outCh } = mix;
     const { encRate, bitrate } = mp3Settings(kind, rate, outCh);
+    // Left as it is, the volume doesn't change: the leveler then only keeps two loud tracks added together from going over.
+    const leveler = new Leveler(rate, outCh, gain ?? 0, gain == null ? 0 : LEVEL_CEILING);
 
     const output = new MB.Output({ format: new MB.Mp3OutputFormat(), target: new MB.BufferTarget() });
     const source = new MB.AudioSampleSource({ codec: 'mp3', bitrate, ...(encRate !== rate ? { transform: { sampleRate: encRate } } : {}) });
@@ -931,23 +1168,22 @@ async function encodeMp3(item, kind, { start, end, onProgress, stopped }) {
     output.setMetadataTags({ title: item.name });
     await output.start();
 
-    const total = Math.max(1, Math.round((end - start) * rate));
-    let written = 0, peak = 0;
+    let written = 0;
+    const send = async ({ block, frames }) => {
+      if (!frames) return;
+      const sample = new MB.AudioSample({ data: block, format: 'f32-planar', numberOfChannels: outCh, sampleRate: rate, timestamp: written / rate });
+      try { await source.add(sample); } finally { sample.close(); }
+      written += frames;
+    };
     try {
-      while (written < total) {
+      while (true) {
         if (stopped()) throw new Stopped();
-        const want = Math.min(BLOCK, total - written);
-        const parts = await Promise.all(live.map((r) => r.read(want)));
-        const got = Math.max(...parts.map((p) => (p[0] ? p[0].length : 0)));
-        if (!got) break;                               // every track has ended
-        const block = new Float32Array(got * outCh);
-        for (const planes of parts) if (planes[0] && planes[0].length) mixInto(block, outCh, got, planes);
-        peak = Math.max(peak, limit(block));
-        const sample = new MB.AudioSample({ data: block, format: 'f32-planar', numberOfChannels: outCh, sampleRate: rate, timestamp: written / rate });
-        try { await source.add(sample); } finally { sample.close(); }
-        written += got;
-        onProgress(written / total);
+        const piece = await mix.read();
+        if (!piece) break;
+        await send(leveler.process(piece.block, piece.frames));
+        onProgress(done + (1 - done) * piece.done);
       }
+      await send(leveler.finish());
       if (!written) throw new UserError('There’s no sound in the part you kept.');
       source.close();
       await output.finalize();
@@ -955,9 +1191,10 @@ async function encodeMp3(item, kind, { start, end, onProgress, stopped }) {
       if (output.state !== 'finalized' && output.state !== 'canceled') await output.cancel().catch(() => {});
       throw err;
     }
-    return { blob: new Blob([output.target.buffer], { type: 'audio/mpeg' }), ext: 'mp3', mime: 'audio/mpeg', duration: written / rate, peak };
+    return { blob: new Blob([output.target.buffer], { type: 'audio/mpeg' }), ext: 'mp3', mime: 'audio/mpeg', duration: written / rate,
+      peak: leveler.peak, gain, lufs: level && Number.isFinite(level.lufs) ? level.lufs : null };
   } finally {
-    for (const r of readers) r.stop();
+    mix.stop();
   }
 }
 
@@ -1079,10 +1316,11 @@ async function runQueue() {
 }
 async function extractOne(item) {
   const kind = S.kind;
-  item.status = 'working'; item.progress = 0; item.message = '';
+  item.status = 'working'; item.progress = 0; item.phase = ''; item.message = '';
   paintCard(item); paintBar();
   const { start, end } = trimOf(item);
-  const job = { start, end, stopped: () => S.stop, onProgress: (p) => { item.progress = clamp(p, 0, 1); scheduleProgress(); } };
+  const job = { start, end, even: kind !== 'original' && S.even, stopped: () => S.stop,
+    onProgress: (p, phase = '') => { item.progress = clamp(p, 0, 1); item.phase = phase; scheduleProgress(); } };
   try {
     const out = kind === 'original' ? await copySound(item, job) : await encodeMp3(item, kind, job);
     const rec = await saveResult(item, kind, out);
@@ -1101,7 +1339,8 @@ async function extractOne(item) {
 }
 async function saveResult(item, kind, out) {
   const rec = { id: uid(), name: uniqueName(item.name, out.ext), ext: out.ext, mime: out.mime, kind, size: out.blob.size,
-    duration: out.duration, created: Date.now(), source: item.file.name, silent: out.peak != null && out.peak < SILENT_PEAK, blob: out.blob };
+    duration: out.duration, created: Date.now(), source: item.file.name, silent: out.peak != null && out.peak < SILENT_PEAK,
+    gain: out.gain ?? null, lufs: out.lufs ?? null, blob: out.blob };
   try { await db.put(forDb(rec)); } catch (e) { rec.unsaved = true; }   // still usable until the app closes
   S.results.unshift(rec);
   fresh.add(rec.id);
@@ -1128,7 +1367,8 @@ function detailsOf(item, err) {
     `File: ${item.file.name} (${item.file.type || 'no type'}, ${item.size} bytes)`,
     item.format ? `Format: ${item.format}, ${fmtTime(item.duration, 2)}${item.hasVideo ? ', with picture' : ''}` : '',
     item.tracks.length ? `Sound tracks: ${item.tracks.map((t, i) => `#${i + 1} ${t.codec || '?'} ${t.rate} Hz ${t.channels} ch${t.decodable ? '' : ' (no decoder)'}`).join('; ')}` : '',
-    `Output: ${S.kind}; trim ${trimOf(item).start}–${trimOf(item).end}`,
+    `Output: ${S.kind}${S.kind === 'original' ? '' : S.even ? ', even volume' : ', own volume'}; trim ${trimOf(item).start}–${trimOf(item).end}`,
+    item.level && Number.isFinite(item.level.lufs) ? `Measured: ${item.level.lufs.toFixed(1)} LUFS, peak ${(20 * Math.log10(item.level.peak)).toFixed(1)} dBFS` : '',
     `Error: ${err ? `${err.name || 'Error'}: ${err.message || err}` : 'none'}`,
     `Browser: ${navigator.userAgent}`,
   ].filter(Boolean).join('\n');
@@ -1164,6 +1404,12 @@ function paintKind() {
     b.disabled = S.running || (k !== 'original' && !CAN_DECODE);
   }
   el.kindNote.textContent = OUTPUTS[S.kind].note;
+  // Even out volume works on MP3s only: Original is the sound copied as it is.
+  const mp3 = S.kind !== 'original';
+  el.evenBox.checked = S.even && mp3;
+  el.evenBox.disabled = S.running || !mp3;
+  el.evenRow.classList.toggle('off', el.evenBox.disabled);
+  el.evenSub.textContent = !mp3 ? 'Original keeps the sound exactly as it is.' : S.even ? 'Every MP3 comes out equally loud.' : 'Each MP3 keeps its own volume.';
 }
 function setKind(k) {
   if (S.running || !OUTPUTS[k] || (k !== 'original' && !CAN_DECODE)) return;
@@ -1175,7 +1421,7 @@ function setKind(k) {
 
 function buildCard(item) {
   const ui = item.ui = {};
-  ui.thumb = h('button', { class: 'thumb', type: 'button', 'aria-label': 'Trim', onclick: () => openTrim(item) });
+  ui.thumb = h('button', { class: 'thumb', type: 'button', tabindex: '-1', 'aria-hidden': 'true', onclick: () => openTrim(item) });   // the Trim button beside it is the one Tab and VoiceOver reach
   ui.name = h('input', { class: 'name', value: item.name, 'aria-label': 'File name', enterkeyhint: 'done', autocomplete: 'off', autocapitalize: 'off', spellcheck: 'false',
     oninput: (e) => { item.name = e.target.value; },
     onblur: () => { item.name = cleanName(item.name) || baseName(item.file); ui.name.value = item.name; },
@@ -1265,7 +1511,7 @@ function statusFor(item) {
     case 'nosound': return { tone: 'warn', text: 'This recording has no sound track, so there’s nothing to extract.' };
     case 'unreadable': return { tone: 'bad', text: 'Echo Peel can’t read this file. It may not be a video or a sound recording.', actions: [['Details', () => showDetails(item)]] };
     case 'waiting': return { text: 'Waiting…' };
-    case 'working': return { text: `Extracting… ${Math.round(item.progress * 100)}%` };
+    case 'working': return { text: `${item.phase === 'measure' ? 'Measuring the volume…' : 'Extracting…'} ${Math.round(item.progress * 100)}%` };
     case 'done': return { tone: 'good', text: 'Done. It’s under Audio files.', actions: [['Extract again', () => again(item)]] };
     case 'error': return { tone: 'bad', text: item.message, actions: [['Details', () => showDetails(item)]] };
     case 'ready': {
@@ -1334,8 +1580,25 @@ function paintBar() {
 const rows = new Map();    // file id → its row on screen
 const fresh = new Set();   // files made a moment ago (briefly highlighted)
 const fileName = (r) => `${r.name}.${r.ext}`;
-function resultMeta(r) {
-  return `${fmtTime(r.duration)} · ${fmtBytes(r.size)} · ${OUTPUTS[r.kind] ? OUTPUTS[r.kind].name : r.ext.toUpperCase()}`;
+// The details under a file's name. In the list it's short, with the volume change before the kind, so a narrow
+// phone cuts off the kind (the name already ends in .mp3) rather than the volume; the menu spells it all out.
+function resultMeta(r, full = false) {
+  const kind = OUTPUTS[r.kind] ? OUTPUTS[r.kind][full ? 'name' : 'label'] : r.ext.toUpperCase();
+  return [fmtTime(r.duration), fmtBytes(r.size), full ? '' : levelText(r), kind].filter(Boolean).join(' · ');
+}
+// What Even out volume did to a file: a few words for its row, a sentence for its menu. Nothing for files made without it.
+function levelText(r) {
+  if (r.gain == null) return '';
+  const db = Math.round(Math.abs(r.gain));
+  return db ? `${r.gain < 0 ? '−' : '+'}${db} dB` : 'even volume';
+}
+const TARGET_TEXT = `${String(LEVEL_TARGET).replace('-', '−')} LUFS`;
+function levelNote(r) {
+  if (r.gain == null) return '';
+  const db = Math.round(Math.abs(r.gain));
+  if (!db) return `It was already at the same volume as every other MP3 (${TARGET_TEXT}).`;
+  if (r.lufs != null && r.lufs + r.gain < LEVEL_TARGET - 0.5) return `It was very quiet, so it was turned up ${db} dB, the most Echo Peel does. It may still sound a little quieter than the others.`;
+  return `Turned ${r.gain < 0 ? 'down' : 'up'} ${db} dB, to the same volume as every other MP3 (${TARGET_TEXT}).`;
 }
 function buildRow(rec) {
   const row = {};
@@ -1361,8 +1624,9 @@ function paintResults() {
 function resultMenu(rec) {
   openSheet({
     title: fileName(rec),
-    sub: resultMeta(rec) + (rec.source ? ` · from ${rec.source}` : ''),
-    body: rec.silent ? h('p', { class: 'note', style: 'text-align:center', text: 'This file is silent. If the app you recorded was muted (for example by Silent mode), its sound wasn’t in the recording.' }) : null,
+    sub: resultMeta(rec, true) + (rec.source ? ` · from ${rec.source}` : ''),
+    body: rec.silent ? h('p', { class: 'note', style: 'text-align:center', text: 'This file is silent. If the app you recorded was muted (for example by Silent mode), its sound wasn’t in the recording.' })
+      : levelNote(rec) ? h('p', { class: 'note', style: 'text-align:center', text: levelNote(rec) }) : null,
     actions: [
       { label: SHARE ? 'Save or share…' : 'Download', icon: SHARE ? 'share' : 'download', run: () => saveFiles([rec]) },
       { label: 'Rename', icon: 'pencil', run: () => renameResult(rec) },
@@ -1517,17 +1781,27 @@ function showDetails(item) {
 /* ---------- 13. The trim editor ---------- */
 // Shows the video (or just the sound) with a waveform. Drag the two edges of the frame,
 // nudge them with − and +, or play to a moment and tap "Set at playhead".
+const HANDLE = 20;                 // width of each side of the frame (the handles), in pixels; matches .sel in the styles
+const GRAB_OUT = 18, GRAB_IN = 6;  // a finger this close to a handle grabs it: outside the frame, and just inside it
+// While dragging on the timeline, move the finger this far down (or up) from it to make finer, slower moves.
+const FINE = [
+  { away: 44, speed: 1 / 8, text: 'Fine control' },
+  { away: 110, speed: 1 / 64, text: 'Extra-fine control' },
+];
+
 function openTrim(item) {
   if (!canTrim(item) || item.status === 'working') return;
   closeSheet(); stopPlayer();
   const dur = Math.max(0.1, item.duration);
   const t = { start: clamp(item.trim.start, 0, dur), end: clamp(item.trim.end ?? dur, 0, dur) };
   if (t.end - t.start < MIN_LENGTH) { t.start = 0; t.end = dur; }
+  const first = { ...t };   // to tell later whether anything changed
   let playhead = t.start, stopAt = t.end, offset = 0, raf = 0, closed = false, canPlay = true, fallback = false;
-  let seekWanted = null, seekRaf = 0, drag = null, media = null;
+  let seekWanted = null, seekRaf = 0, drag = null, media = null, tabbed = false;
   let peaks = item.peaks && item.peaks.key === peaksKey(item) ? item.peaks.data : null;
-  const urls = [], lastFocus = document.activeElement, ui = {};
-  const GRAB = 26;   // how close (in pixels) a touch must be to an edge to grab it
+  const urls = [], lastFocus = document.activeElement, ui = {}, inerted = [];
+  const total = '/ ' + fmtTime(dur, 1);
+  const changed = () => Math.abs(t.start - first.start) > 0.0005 || Math.abs(t.end - first.end) > 0.0005;
 
   // --- the picture (or a sound-only panel)
   ui.noPic = h('div', { class: 'no-pic', hidden: true });
@@ -1544,23 +1818,25 @@ function openTrim(item) {
   ui.inner = h('div', { class: 'tl-in' }, ui.canvas, ui.shadeL, ui.shadeR, ui.waveMsg, ui.sel, ui.head);
   ui.tl = h('div', { class: 'tl', role: 'group', 'aria-label': 'Timeline. Drag the edges of the frame to trim.' }, ui.inner);
   ui.ruler = h('div', { class: 'tl-ruler', 'aria-hidden': 'true' });
-  ui.keep = h('p', { class: 'ed-keep' });
+  ui.keep = h('p', { class: 'ed-keep', 'aria-live': 'polite' });
   ui.now = h('b', { class: 'num' });
-  const clock = h('div', { class: 'ed-clock' }, ui.now, h('span', { text: '/ ' + fmtTime(dur, 1) }));
+  ui.total = h('span', { text: total });
+  ui.clock = h('div', { class: 'ed-clock' }, ui.now, ui.total);
 
   // --- start and end panels
   const edge = (which) => {
     const label = which === 'start' ? 'Start' : 'End';
     const minus = h('button', { class: 'nudge', type: 'button', 'aria-label': `${label} ${NUDGE} s earlier` }, icon('minus', 18));
     const plus = h('button', { class: 'nudge', type: 'button', 'aria-label': `${label} ${NUDGE} s later` }, icon('plus', 18));
-    const time = h('button', { class: 'edge-time', type: 'button', 'aria-label': `Hear the ${label.toLowerCase()}`,
+    const time = h('button', { class: 'edge-time', type: 'button',
       onclick: () => (which === 'start' ? playFrom(t.start, Math.min(t.end, t.start + EDGE_LISTEN)) : playFrom(Math.max(t.start, t.end - EDGE_LISTEN), t.end)) },
-    icon('play', 12), h('span'));
-    const set = h('button', { class: 'edge-set', type: 'button', text: 'Set at playhead', onclick: () => setEdge(which, playhead) });
+    h('span', { class: 'edge-label', text: label }), h('span', { class: 'edge-val' }, icon('play', 10), h('span')));
+    const set = h('button', { class: 'edge-set', type: 'button', text: 'Set at playhead', onclick: () => setAtPlayhead(which) });
     repeatButton(minus, () => nudge(which, -NUDGE));
     repeatButton(plus, () => nudge(which, NUDGE));
-    ui[which + 'Time'] = time.lastChild;
-    return h('div', { class: 'edge' }, h('div', { class: 'edge-label', text: label }), h('div', { class: 'edge-row' }, minus, time, plus), set);
+    ui[which + 'Btn'] = time;
+    ui[which + 'Time'] = time.lastChild.lastChild;
+    return h('div', { class: 'edge', role: 'group', 'aria-label': label }, time, h('div', { class: 'steps' }, minus, plus), set);
   };
 
   // --- buttons at the bottom
@@ -1569,18 +1845,20 @@ function openTrim(item) {
   ui.hearSel = h('button', { class: 'side', type: 'button', onclick: () => playFrom(t.start, t.end) }, icon('loop', 18), 'Play kept part');
   const hint = TOUCH ? null : h('p', { class: 'ed-hint', text: 'Space plays · ← → move 1 s (with Shift 0.1 s) · [ and ] set start and end at the playhead · Enter saves' });
 
-  const root = h('div', { class: 'ed', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Trim ' + item.name },
+  const root = h('div', { class: 'ed', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Trim ' + item.name, tabindex: '-1' },
     h('div', { class: 'ed-top' },
       h('button', { class: 'link', type: 'button', text: 'Cancel', onclick: () => close(false) }),
       h('div', { class: 'ed-title' }, h('b', { text: 'Trim' }), h('span', { text: item.name })),
       h('button', { class: 'link strong', type: 'button', text: 'Done', onclick: () => close(true) })),
     h('div', { class: 'ed-main' },
       ui.stage,
-      h('div', { class: 'ed-ctrl' }, clock, ui.tl, ui.ruler, ui.keep,
-        h('div', { class: 'edges' }, edge('start'), edge('end')),
-        h('div', { class: 'ed-bottom' }, ui.whole, ui.play, ui.hearSel), hint)));
-  const backdrop = h('div', { class: 'ed-backdrop', onclick: () => close(false) });
+      h('div', { class: 'ed-ctrl' }, ui.clock, ui.tl, ui.ruler, ui.keep,
+        h('div', { class: 'edges' }, edge('start'), edge('end'))),
+      h('div', { class: 'ed-foot' }, h('div', { class: 'ed-bottom' }, ui.whole, ui.play, ui.hearSel), hint)));
+  // A click beside the editor (on a computer) closes it only when nothing would be lost.
+  const backdrop = h('div', { class: 'ed-backdrop', onclick: () => { if (!changed()) close(false); } });
   const ro = new ResizeObserver(() => { drawWave(); paint(); });
+  const scheme = matchMedia('(prefers-color-scheme: dark)');   // redraw the waveform when light or dark mode changes
 
   // ----- the media element (video or audio) -----
   function makeMedia(src, isVideo) {
@@ -1679,58 +1957,90 @@ function openTrim(item) {
     else t.end = clamp(sec, t.start + MIN_LENGTH, dur);
     paint();
   }
+  // "Set at playhead": if the playhead is past the other edge, that edge moves out of the way
+  // (to the very end, or the very beginning) instead of leaving a sliver.
+  function setAtPlayhead(which) {
+    if (which === 'start' && playhead > t.end - MIN_LENGTH) t.end = dur;
+    if (which === 'end' && playhead < t.start + MIN_LENGTH) t.start = 0;
+    setEdge(which, playhead);
+  }
   function nudge(which, delta) {
+    if (isPlaying()) pause();   // otherwise moving the end would play on past it
     setEdge(which, t[which] + delta);
     setPlayhead(t[which], true);
   }
 
   // ----- fingers and mouse on the timeline -----
+  // A finger on or beside a handle moves that edge; anywhere else it moves the playhead.
+  function edgeAt(x, W) {
+    const xs = (t.start / dur) * W, xe = (t.end / dur) * W;
+    const onStart = x >= xs - HANDLE - GRAB_OUT && x <= xs + GRAB_IN;
+    const onEnd = x >= xe - GRAB_IN && x <= xe + HANDLE + GRAB_OUT;
+    if (onStart && onEnd) return x < (xs + xe) / 2 ? 'start' : 'end';   // edges close together: the side of the finger decides
+    return onStart ? 'start' : onEnd ? 'end' : null;
+  }
   ui.tl.addEventListener('pointerdown', (e) => {
-    if (e.button > 0) return;
+    if (e.button > 0 || drag) return;
     const r = ui.inner.getBoundingClientRect(), x = e.clientX - r.left;
-    const xs = (t.start / dur) * r.width, xe = (t.end / dur) * r.width;
-    const ds = Math.abs(x - xs), de = Math.abs(x - xe);
-    let which = 'seek';
-    if (Math.min(ds, de) <= GRAB) {
-      if (xe - xs < GRAB) which = x < (xs + xe) / 2 ? 'start' : 'end';   // edges close together: the side of the finger decides
-      else which = ds <= de ? 'start' : 'end';
-    }
-    drag = { which, id: e.pointerId, grab: which === 'start' ? x - xs : which === 'end' ? x - xe : 0 };
+    const which = edgeAt(x, r.width) || 'seek';
+    drag = { which, id: e.pointerId, grab: which === 'seek' ? 0 : x - (t[which] / dur) * r.width, x: e.clientX, sec: 0, level: 0,
+      resume: which === 'seek' && isPlaying() };   // scrubbing pauses, then playing carries on from the new spot
     ui.tl.setPointerCapture(e.pointerId);
-    if (which !== 'seek') pause();
-    dragTo(e.clientX);
+    pause();
+    dragTo(e, false);
     e.preventDefault();
   });
-  ui.tl.addEventListener('pointermove', (e) => { if (drag && e.pointerId === drag.id) dragTo(e.clientX); });
+  ui.tl.addEventListener('pointermove', (e) => {
+    if (drag && e.pointerId === drag.id) dragTo(e, true);
+    else if (!drag && e.pointerType === 'mouse') ui.tl.classList.toggle('grab', !!edgeAt(e.clientX - ui.inner.getBoundingClientRect().left, ui.inner.clientWidth));
+  });
   const endDrag = (e) => {
     if (!drag || e.pointerId !== drag.id) return;
-    const was = drag.which;
+    const resume = drag.resume;
     drag = null;
-    if (was !== 'seek') seekMedia(playhead, false);   // a precise seek once the finger lifts
+    ui.clock.classList.remove('hint');
+    ui.total.textContent = total;
+    if (resume) playFrom(playhead, playhead < t.end ? t.end : dur);
+    else seekMedia(playhead, false);   // a precise seek once the finger lifts (a quick seek may show a nearby picture)
   };
-  ui.tl.addEventListener('pointerup', endDrag);
-  ui.tl.addEventListener('pointercancel', endDrag);
-  function dragTo(clientX) {
-    const r = ui.inner.getBoundingClientRect();
-    const sec = clamp((clientX - drag.grab - r.left) / r.width, 0, 1) * dur;
-    if (drag.which === 'seek') { setPlayhead(sec, true, true); return; }
-    setEdge(drag.which, sec);
-    setPlayhead(t[drag.which], true, true);   // shows the picture at that edge
+  ['pointerup', 'pointercancel', 'lostpointercapture'].forEach((ev) => ui.tl.addEventListener(ev, endDrag));
+  function dragTo(e, moved) {
+    const r = ui.inner.getBoundingClientRect(), box = ui.tl.getBoundingClientRect();
+    const away = Math.max(0, box.top - e.clientY, e.clientY - box.bottom);
+    let level = 0;
+    while (level < FINE.length && away >= FINE[level].away) level++;
+    let sec;
+    if (level) sec = drag.sec + ((e.clientX - drag.x) / r.width) * dur * FINE[level - 1].speed;   // slower than the finger
+    else {
+      if (drag.level) drag.grab = e.clientX - r.left - (drag.sec / dur) * r.width;   // back on the timeline: carry on from here, without a jump
+      sec = ((e.clientX - drag.grab - r.left) / r.width) * dur;
+    }
+    drag.x = e.clientX; drag.level = level;
+    if (drag.which === 'seek') { setPlayhead(sec, true, true); drag.sec = playhead; }
+    else { setEdge(drag.which, sec); drag.sec = t[drag.which]; setPlayhead(drag.sec, true, true); }   // shows the picture at that edge
+    if (moved) {
+      ui.clock.classList.add('hint');
+      ui.total.textContent = level ? FINE[level - 1].text : (TOUCH ? 'Slide down for finer control' : 'Move down for finer control');
+    }
   }
 
   // ----- keyboard (on a computer) -----
   function onKey(e) {
-    if (e.target && e.target.closest && e.target.closest('input,select,textarea')) return;
-    const k = e.key;
+    if (e.metaKey || e.ctrlKey || e.altKey) return;   // leave the browser's own shortcuts alone
+    const k = e.key, el = e.target;
+    if (k === 'Tab') { tabbed = true; return; }
+    if (el && el.closest && el.closest('input,select,textarea')) return;
+    if ((k === 'Enter' || k === ' ') && tabbed && el && el.closest && el.closest('button')) return;   // a button reached with Tab: press it
     if (k === 'Escape') close(false);
     else if (k === 'Enter') close(true);
     else if (k === ' ') togglePlayback();
     else if (k === 'ArrowLeft' || k === 'ArrowRight') setPlayhead(playhead + (k === 'ArrowLeft' ? -1 : 1) * (e.shiftKey ? 0.1 : 1), true);
-    else if (k === '[' || k === 'i') setEdge('start', playhead);
-    else if (k === ']' || k === 'o') setEdge('end', playhead);
+    else if (k === '[' || k === 'i') setAtPlayhead('start');
+    else if (k === ']' || k === 'o') setAtPlayhead('end');
     else return;
     e.preventDefault(); e.stopPropagation();
   }
+  root.addEventListener('pointerdown', () => { tabbed = false; });
 
   // ----- drawing -----
   function paint() {
@@ -1738,11 +2048,14 @@ function openTrim(item) {
     const xs = (t.start / dur) * W, xe = (t.end / dur) * W;
     ui.shadeL.style.width = `${xs}px`;
     ui.shadeR.style.left = `${xe}px`;
-    ui.sel.style.left = `${xs - 20}px`;
-    ui.sel.style.width = `${xe - xs + 40}px`;
+    ui.sel.style.left = `${xs - HANDLE}px`;
+    ui.sel.style.width = `${xe - xs + HANDLE * 2}px`;
     ui.startTime.textContent = fmtTime(t.start, 1);
     ui.endTime.textContent = fmtTime(t.end, 1);
-    ui.keep.textContent = `Keeping ${fmtTime(t.end - t.start, 1)} of ${fmtTime(dur, 1)}`;
+    ui.startBtn.setAttribute('aria-label', `Start ${ui.startTime.textContent}, hear it`);
+    ui.endBtn.setAttribute('aria-label', `End ${ui.endTime.textContent}, hear it`);
+    const keep = `Keeping ${fmtTime(t.end - t.start, 1)} of ${fmtTime(dur, 1)}`;
+    if (ui.keep.textContent !== keep) ui.keep.textContent = keep;   // (screen readers announce each change)
     ui.whole.disabled = t.start <= 0.001 && t.end >= dur - 0.001;
     paintHead();
   }
@@ -1817,7 +2130,9 @@ function openTrim(item) {
     try { media.pause(); media.removeAttribute('src'); media.load(); } catch (e) { /* already gone */ }
     urls.forEach((u) => URL.revokeObjectURL(u));
     ro.disconnect();
+    scheme.removeEventListener('change', drawWave);
     document.removeEventListener('keydown', onKey, true);
+    inerted.forEach((el) => { el.inert = false; });
     root.remove(); backdrop.remove();
     document.body.classList.remove('locked');
     if (save) {
@@ -1835,12 +2150,16 @@ function openTrim(item) {
   // ----- show the editor (everything above is ready now) -----
   document.body.append(backdrop, root);
   document.body.classList.add('locked');
+  // The page behind can't be reached with Tab or a screen reader while the editor is open (the toast still shows).
+  for (const el of document.body.children) if (el !== root && el !== backdrop && el.id !== 'toast' && !el.inert) { el.inert = true; inerted.push(el); }
   document.addEventListener('keydown', onKey, true);
+  scheme.addEventListener('change', drawWave);
   media = makeMedia(URL.createObjectURL(item.file), item.hasVideo);
   urls.push(media.src);
   if (!item.hasVideo) showNoPic('wave', 'Sound recording');
   ro.observe(ui.inner);
   paint(); paintPlay();
+  root.focus({ preventScroll: true });
   loadPeaks();
 }
 // How tall the waveform is drawn for each loudness (0–255): a decibel scale, so quiet speech still shows.
@@ -1888,9 +2207,11 @@ function openHelp() {
     IOS ? p('Fastest: in Photos, open the recording and tap Share › <b>Save to Files</b>. Then tap <b>+</b> here and pick it from Files. Choosing from the <b>Photo Library</b> works too, but the iPhone converts the video first, which takes a while for long ones.')
       : p('Click <b>+</b> or drop video files anywhere on the page.'),
     h('h4', { text: 'Trim' }),
-    p('Cut off the start and end, like the moment you open Control Center. Drag the edges of the frame, use − and +, or play to a moment and tap <b>Set at playhead</b>.'),
+    p('Cut off the start and end, like the moment you open Control Center. Drag the edges of the frame, use − and +, or play to a moment and tap <b>Set at playhead</b>. While dragging, slide your finger down, away from the timeline, for finer control.'),
     h('h4', { text: 'Choose the sound' }),
     p('<b>Speech</b> makes small mono MP3s for voices. <b>Music</b> keeps stereo at a higher quality. <b>Original</b> copies the video’s own sound exactly as it is, usually as an .m4a file.'),
+    h('h4', { text: 'Even out volume' }),
+    p(`On by default. Echo Peel measures how loud each recording is, then turns loud ones down and quiet ones up, so every MP3 plays at the same volume (${TARGET_TEXT}, the level podcasts use). Very quiet ones are turned up ${LEVEL_MAX_BOOST} dB at most. <b>Original</b> always keeps the sound as it is.`),
     h('h4', { text: 'Save' }),
     p(SHARE ? 'Tap the share button on a finished file, then <b>Save to Files</b>. Files stay in Echo Peel until you clear them.'
       : 'Click the download button on a finished file. With several files, <b>Download all</b> lets you pick a folder.'),
@@ -1929,6 +2250,7 @@ function bindStatic() {
     if (keys[i]) { setKind(keys[i]); el.kindSeg.querySelector(`[data-kind="${keys[i]}"]`).focus(); }
     e.preventDefault();
   });
+  el.evenBox.addEventListener('change', () => { S.even = el.evenBox.checked; savePref('even', S.even ? 'on' : 'off'); paintKind(); paintBar(); });
   el.barBtn.addEventListener('click', () => { if (S.running) { S.stop = true; paintBar(); } else startRun(); });
   el.clearDoneBtn.addEventListener('click', clearFinished);
   el.saveAllBtn.addEventListener('click', () => saveFiles(S.results));

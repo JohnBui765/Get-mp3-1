@@ -2,7 +2,7 @@
 // Your finished audio files live in the app's database, not here.
 // Bump the version whenever you upload changed files, so phones and computers pick them up.
 // The "epeel-" prefix keeps this cache apart from the Echo Loop apps and Echo Stems on the same site.
-const CACHE = 'epeel-v1';
+const CACHE = 'epeel-v2';
 const SHELL = [
   './', './index.html', './mediabunny.min.mjs', './mediabunny-mp3-encoder.min.mjs',
   './manifest.webmanifest', './icon-180.png', './icon-192.png', './icon-512.png',

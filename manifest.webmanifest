@@ -2,7 +2,7 @@
   "name": "Echo Peel",
   "short_name": "Echo Peel",
   "description": "Takes the sound out of screen recordings and other videos and saves it as an MP3. Works offline; nothing is uploaded.",
-  "id": "./",
+  "id": "/Get-mp3-1/",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
